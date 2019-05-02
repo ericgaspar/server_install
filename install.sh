@@ -6,8 +6,8 @@ if [ "$(whoami)" != "root" ]; then
 fi
 
 # Ask for personnal Domain name
-read -s -p "What is you Domain Name ? : " DOMAIN
-#DOMAIN = "cuboctaedre.xyz"
+#read -p "What is you Domain Name ? : " DOMAIN
+DOMAIN = "cuboctaedre.xyz"
 
 # Solve Perl language
 export LANGUAGE=fr_FR.UTF-8
@@ -40,8 +40,8 @@ server {
 	listen 80 default_server;
 	listen [::]:80 default_server;
 
-	listen 443 ssl http2 default_server;
-	listen [::]:443 ssl http2 default_server;
+#	listen 443 ssl http2 default_server;
+#	listen [::]:443 ssl http2 default_server;
 	
 	server_name cuboctaedre.xyz;
 	root /var/www/cuboctaedre.xyz/public;
@@ -119,7 +119,6 @@ usermod -a -G www-data pi
 chown -R pi:www-data /var/www
 chgrp -R www-data /var/www
 chmod -R g+rw /var/www
-
 setfacl -d -R -m g::rw /var/www
 
 # MySQL
@@ -131,8 +130,6 @@ mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT 
 
 #sed -i 's/^bind-address/#bind-address/' /etc/mysql/mysql.conf.d/mysqld.cnf
 #sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
-
-
 
 # PhpMyAdmin
 read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
@@ -154,7 +151,6 @@ letsencrypt certonly --webroot -w /var/www/$DOMAIN -d  $DOMAIN -d www.$DOMAIN
 # mkdir -p /etc/nginx/ssl
 # openssl rand 48 -out /etc/nginx/ssl/ticket.key
 # openssl dhparam -out /etc/nginx/ssl/dhparam4.pem 2048
-
 # echo "ssl_dhparam /etc/nginx/ssl/dhparam4.pem;" >>  /etc/nginx/conf.d/$DOMAIN
 
 service nginx restart
