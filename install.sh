@@ -20,11 +20,10 @@ apt-get dist-upgrade -y
 
 apt-get install -y rpi-update
 
-apt-get install -y git
-apt-get install -y vim
+apt-get install -y git vim
 
-apt-get install -y php7.0 php7.0-fpm php7.0-cli php7.0-opcache php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 apt-get install -y nginx
+apt-get install -y php7.0 php7.0-fpm php7.0-cli php7.0-opcache php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 
 update-rc.d nginx defaults
 update-rc.d php7.0-fpm defaults
@@ -63,11 +62,21 @@ server {
 EOF
 
 mkdir -p /var/www/$DOMAIN/public
-cat > /var/www/$DOMAIN/public/index.php << "<?php phpinfo(); ?>"
+cat > /var/www/$DOMAIN/public/index.php << "EOF"
+<?php
+class Application
+{
+	public function __construct()
+	{
+		phpinfo();
+	}
+}
+$application = new Application();
+EOF
 
 rm -rf /var/www/html
 
-usermod -a -G www-data pi mysql-client
+usermod -a -G www-data pi
 chown -R pi:www-data /var/www
 chgrp -R www-data /var/www
 chmod -R g+rw /var/www
@@ -80,7 +89,7 @@ service nginx restart
 service php7.0-fpm restart
 
 # MySQL
-apt-get -y install mysql-server mysql-client
+apt-get -y install mysql-server mysql-client --fix-missing
 
 #read -s -p "Type the password you just entered (MySQL): " mysqlPass
 
@@ -89,15 +98,15 @@ apt-get -y install mysql-server mysql-client
 #sed -i 's/^bind-address/#bind-address/' /etc/mysql/mysql.conf.d/mysqld.cnf
 #sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
 
-#service mysql restart
+service mysql restart
 
 # PhpMyAdmin
-#read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
-#if [ "$prompt" = "y" ]; then
-#	apt-get install -y phpmyadmin
-#	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN/public
-#	echo "http://192.168.0.38/phpmyadmin to enter PhpMyAdmin"
-#fi
+read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
+if [ "$prompt" = "y" ]; then
+	apt-get install -y phpmyadmin
+	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN/public
+	echo "http://192.168.0.38/phpmyadmin to enter PhpMyAdmin"
+fi
 
 # Fail2ban
 apt-get -y install fail2ban
@@ -110,3 +119,5 @@ letsencrypt certonly --webroot -w ~/var/www/$DOMAIN -d  $DOMAIN -d www.$DOMAIN
 
 apt-get -y autoremove
 apt-get -y autoclean
+
+reboot
