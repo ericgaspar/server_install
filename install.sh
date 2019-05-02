@@ -63,11 +63,11 @@ server {
 EOF
 
 mkdir -p /var/www/$DOMAIN/public
-cat > /var/www/$DOMAIN/public/index.php << "<?php phpinfo(); ?"
+cat > /var/www/$DOMAIN/public/index.php << "<?php phpinfo(); ?>"
 
 rm -rf /var/www/html
 
-usermod -a -G www-data pi
+usermod -a -G www-data pi mysql-client
 chown -R pi:www-data /var/www
 chgrp -R www-data /var/www
 chmod -R g+rw /var/www
@@ -80,24 +80,24 @@ service nginx restart
 service php7.0-fpm restart
 
 # MySQL
-apt-get -y install mysql-server --fix-missing
+apt-get -y install mysql-server mysql-client
 
-read -s -p "Type the password you just entered (MySQL): " mysqlPass
+#read -s -p "Type the password you just entered (MySQL): " mysqlPass
 
-mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
+#mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
 
-sed -i 's/^bind-address/#bind-address/' /etc/mysql/mysql.conf.d/mysqld.cnf
-sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
+#sed -i 's/^bind-address/#bind-address/' /etc/mysql/mysql.conf.d/mysqld.cnf
+#sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
 
-service mysql restart
+#service mysql restart
 
 # PhpMyAdmin
-read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
-if [ "$prompt" = "y" ]; then
-	apt-get install -y phpmyadmin
-	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN/public
-	echo "http://192.168.0.38/phpmyadmin to enter PhpMyAdmin"
-fi
+#read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
+#if [ "$prompt" = "y" ]; then
+#	apt-get install -y phpmyadmin
+#	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN/public
+#	echo "http://192.168.0.38/phpmyadmin to enter PhpMyAdmin"
+#fi
 
 # Fail2ban
 apt-get -y install fail2ban
