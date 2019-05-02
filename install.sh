@@ -22,7 +22,7 @@ apt-get dist-upgrade -y
 
 apt-get install -y rpi-update
 
-apt-get install -y git vim
+apt-get install -y git vim acl
 
 apt-get install -y nginx
 apt-get install -y php7.0 php7.0-fpm php7.0-cli php7.0-opcache php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
@@ -35,7 +35,6 @@ sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/n
 
 cat > /etc/nginx/sites-enabled/default << "EOF"
 # Default server
-
 server {
 	listen 80 default_server;
 	listen [::]:80 default_server;
@@ -44,7 +43,7 @@ server {
 #	listen [::]:443 ssl http2 default_server;
 	
 	server_name cuboctaedre.xyz;
-	root /var/www/cuboctaedre.xyz/public;
+	root /var/www/cuboctaedre.xyz;
 	index index.php index.html index.htm default.html;
 
 	location / {
@@ -74,18 +73,15 @@ server {
        gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
 	# Improve HTTPS performance with session resumption
-       ssl_session_cache shared:SSL:10m;
-       ssl_session_timeout 5m;
-
-
-	# SSL Settings:
+    #   ssl_session_cache shared:SSL:10m;
+    #   ssl_session_timeout 5m;
 
 	# Enable server-side protection against BEAST attacks
-        ssl_prefer_server_ciphers on;
-        ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+    #    ssl_prefer_server_ciphers on;
+    #    ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
 
     # Disable SSLv3
-       ssl_protocols TLSv1.1 TLSv1.2;
+    #   ssl_protocols TLSv1.1 TLSv1.2;
 
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
@@ -98,8 +94,8 @@ server {
 }
 EOF
 
-mkdir -p /var/www/$DOMAIN/public
-cat > /var/www/$DOMAIN/public/index.php << "EOF"
+mkdir -p /var/www/$DOMAIN
+cat > /var/www/$DOMAIN/index.php << "EOF"
 <?php
 class Application
 {
@@ -112,8 +108,6 @@ $application = new Application();
 EOF
 
 rm -rf /var/www/html
-
-apt-get -y install acl
 
 usermod -a -G www-data pi
 chown -R pi:www-data /var/www
@@ -135,7 +129,7 @@ mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT 
 read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
 	apt-get install -y phpmyadmin
-	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN/public
+	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
 	echo "http://192.168.0.38/phpmyadmin or http://$DOMAIN/phpmyadmin to enter PhpMyAdmin"
 fi
 
@@ -161,4 +155,9 @@ service fail2ban restart
 apt-get -y autoremove
 apt-get -y autoclean
 
-reboot
+read -p "Do you want to reboot? <y/N> " prompt
+if [ "$prompt" = "y" ]; then
+	reboot
+else
+	echo "The installation is finished"	
+fi
