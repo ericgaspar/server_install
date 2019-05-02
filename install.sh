@@ -1,13 +1,15 @@
 #!/bin/bash
 
 if [ "$(whoami)" != "root" ]; then
-	echo "Run script as ROOT please. (sudo !!)"
+	echo "Run script as ROOT ! (sudo bash install.sh)"
 	exit
 fi
 
-DOMAIN="cuboctaedre.xyz"
+# Ask for personnal Domain name
+read -s -p "What is you Domain Name ? : " DOMAIN
+#DOMAIN = "cuboctaedre.xyz"
 
-# Problème de langue de Perl
+# Solve Perl language
 export LANGUAGE=fr_FR.UTF-8
 export LANG=fr_FR.UTF-8
 export LC_ALL=fr_FR.UTF-8
@@ -33,27 +35,62 @@ sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/n
 
 cat > /etc/nginx/sites-enabled/default << "EOF"
 # Default server
+
 server {
 	listen 80 default_server;
 	listen [::]:80 default_server;
+
+	listen 443 ssl http2 default_server;
+	listen [::]:443 ssl http2 default_server;
 	
 	server_name cuboctaedre.xyz;
 	root /var/www/cuboctaedre.xyz/public;
 	index index.php index.html index.htm default.html;
+
 	location / {
 		try_files $uri $uri/ =404;
 	}
+
 	# pass the PHP scripts to FastCGI server
 	location ~ \.php$ {
 		include snippets/fastcgi-php.conf;
 		fastcgi_pass unix:/run/php/php7.0-fpm.sock;
 	}
+
 	# optimize static file serving
 	location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml)$ {
 		access_log off;
 		log_not_found off;
-		expires 30d;
+		expires 60d;
 	}
+
+	# Compression
+       gzip on;
+       gzip_disable "msie6";
+       gzip_vary on;
+       gzip_comp_level 6;
+       gzip_buffers 16 8k;
+       gzip_http_version 1.1;
+       gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+	# Improve HTTPS performance with session resumption
+       ssl_session_cache shared:SSL:10m;
+       ssl_session_timeout 5m;
+
+
+	# SSL Settings:
+
+	# Enable server-side protection against BEAST attacks
+        ssl_prefer_server_ciphers on;
+        ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+
+    # Disable SSLv3
+       ssl_protocols TLSv1.1 TLSv1.2;
+
+    # Diffie-Hellman parameter for DHE ciphersuites
+    # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
+    #   ssl_dhparam /etc/ssl/certs/dhparam.pem;
+
 	# deny access to .htaccess files, should an Apache document root conflict with nginx
 	location ~ /\.ht {
 		deny all;
@@ -85,9 +122,6 @@ chmod -R g+rw /var/www
 
 setfacl -d -R -m g::rw /var/www
 
-service nginx restart
-service php7.0-fpm restart
-
 # MySQL
 apt-get -y install mysql-server --fix-missing
 
@@ -98,7 +132,7 @@ mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT 
 #sed -i 's/^bind-address/#bind-address/' /etc/mysql/mysql.conf.d/mysqld.cnf
 #sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
 
-service mysql restart
+
 
 # PhpMyAdmin
 read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
@@ -111,11 +145,22 @@ fi
 # Fail2ban
 apt-get -y install fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-service fail2ban restart
 
 # Let's Encrypt
 apt-get install -y letsencrypt
 letsencrypt certonly --webroot -w /var/www/$DOMAIN -d  $DOMAIN -d www.$DOMAIN
+
+# Dhparam
+# mkdir -p /etc/nginx/ssl
+# openssl rand 48 -out /etc/nginx/ssl/ticket.key
+# openssl dhparam -out /etc/nginx/ssl/dhparam4.pem 2048
+
+# echo "ssl_dhparam /etc/nginx/ssl/dhparam4.pem;" >>  /etc/nginx/conf.d/$DOMAIN
+
+service nginx restart
+service php7.0-fpm restart
+service mysql restart
+service fail2ban restart
 
 apt-get -y autoremove
 apt-get -y autoclean
