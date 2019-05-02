@@ -5,18 +5,12 @@ if [ "$(whoami)" != "root" ]; then
 	exit
 fi
 
-echo "deb http://mirrordirector.raspbian.org/raspbian/ stretch main contrib non-free rpi" > /etc/apt/sources.list.d/stretch.list
-echo "APT::Default-Release \"jessie\";" > /etc/apt/apt.conf.d/99-default-release
+#echo "deb http://mirrordirector.raspbian.org/raspbian/ stretch main contrib non-free rpi" > /etc/apt/sources.list.d/stretch.list
+#echo "APT::Default-Release \"jessie\";" > /etc/apt/apt.conf.d/99-default-release
 
 #Problème de langue de Perl
-echo "
-#Locales
-export LANGUAGE=fr_FR.UTF-8
-export LANG=fr_FR.UTF-8
-export LC_ALL=fr_FR.UTF-8
-" >> ~/.bashrc
-
-source ~/.bashrc
+locale-gen fr_FR.UTF-8
+dpkg-reconfigure locales
 
 apt-get update -y
 apt-get upgrade -y
