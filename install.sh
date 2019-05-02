@@ -37,8 +37,8 @@ server {
 	listen 80 default_server;
 	listen [::]:80 default_server;
 	
-	server_name $DOMAIN;
-	root /var/www/$DOMAIN/public;
+	server_name cuboctaedre.xyz;
+	root /var/www/cuboctaedre.xyz/public;
 	index index.php index.html index.htm default.html;
 	location / {
 		try_files $uri $uri/ =404;
@@ -85,8 +85,6 @@ chmod -R g+rw /var/www
 
 setfacl -d -R -m g::rw /var/www
 
-apt-get -y autoremove
-
 service nginx restart
 service php7.0-fpm restart
 
@@ -97,8 +95,8 @@ read -s -p "Type the password for MySQL: " mysqlPass
 
 mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
 
-sed -i 's/^bind-address/#bind-address/' /etc/mysql/mysql.conf.d/mysqld.cnf
-sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
+#sed -i 's/^bind-address/#bind-address/' /etc/mysql/mysql.conf.d/mysqld.cnf
+#sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
 
 service mysql restart
 
