@@ -8,6 +8,16 @@ fi
 echo "deb http://mirrordirector.raspbian.org/raspbian/ stretch main contrib non-free rpi" > /etc/apt/sources.list.d/stretch.list
 echo "APT::Default-Release \"jessie\";" > /etc/apt/apt.conf.d/99-default-release
 
+#Problème de langue de Perl
+echo "
+#Locales
+export LANGUAGE=fr_FR.UTF-8
+export LANG=fr_FR.UTF-8
+export LC_ALL=fr_FR.UTF-8
+" >> ~/.bashrc
+
+source ~/.bashrc
+
 apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
@@ -99,5 +109,10 @@ if [ "$prompt" = "y" ]; then
 	ln -s /usr/share/phpmyadmin /var/www/cuboctaedre.xyz/public
 	echo "http://192.168.0.38/phpmyadmin to enter PhpMyAdmin"
 fi
+
+# Fail2ban
+apt-get -y install fail2ban
+cp ~/etc/fail2ban/jail.conf ~/etc/fail2ban/jail.local
+service fail2ban restart
 
 apt-get -y autoremove
