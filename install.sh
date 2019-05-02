@@ -7,6 +7,7 @@ fi
 
 # Ask for personnal Domain name
 #read -p "What is you Domain Name ? : " DOMAIN
+#echo
 DOMAIN = "cuboctaedre.xyz"
 
 # Solve Perl language
@@ -154,6 +155,26 @@ service fail2ban restart
 
 apt-get -y autoremove
 apt-get -y autoclean
+
+# Summary
+echo ""
+echo "------------------------------------------------------------------------------"
+echo "               NGinx + PHP7-FPM + MySQL installation finished"
+echo "------------------------------------------------------------------------------"
+echo "NGinx configuration folder:       /etc/nginx"
+echo "NGinx default site configuration: /etc/nginx/sites-enabled/default"
+echo "NGinx default HTML root:          /var/www/$DOMAIN"
+echo ""
+echo "Installation script  log file:  $LOG_FILE"
+echo ""
+echo "Notes: If you use IpTables add the following rules"
+echo "iptables -A INPUT -i lo -s localhost -d localhost -j ACCEPT"
+echo "iptables -A OUTPUT -o lo -s localhost -d localhost -j ACCEPT"
+echo "iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
+echo "iptables -A INPUT  -p tcp --dport http -j ACCEPT"
+echo ""
+echo "------------------------------------------------------------------------------"
+echo ""
 
 read -p "Do you want to reboot? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
