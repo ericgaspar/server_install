@@ -7,7 +7,7 @@ fi
 
 DOMAIN="cuboctaedre.xyz"
 
-#Problème de langue de Perl
+# Problème de langue de Perl
 export LANGUAGE=fr_FR.UTF-8
 export LANG=fr_FR.UTF-8
 export LC_ALL=fr_FR.UTF-8
@@ -76,6 +76,8 @@ EOF
 
 rm -rf /var/www/html
 
+apt-get -y install acl
+
 usermod -a -G www-data pi
 chown -R pi:www-data /var/www
 chgrp -R www-data /var/www
@@ -89,14 +91,14 @@ service nginx restart
 service php7.0-fpm restart
 
 # MySQL
-apt-get -y install mysql-server mysql-client --fix-missing
+apt-get -y install mysql-server --fix-missing
 
-#read -s -p "Type the password you just entered (MySQL): " mysqlPass
+read -s -p "Type the password for MySQL: " mysqlPass
 
-#mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
+mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
 
-#sed -i 's/^bind-address/#bind-address/' /etc/mysql/mysql.conf.d/mysqld.cnf
-#sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
+sed -i 's/^bind-address/#bind-address/' /etc/mysql/mysql.conf.d/mysqld.cnf
+sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
 
 service mysql restart
 
@@ -105,17 +107,17 @@ read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
 	apt-get install -y phpmyadmin
 	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN/public
-	echo "http://192.168.0.38/phpmyadmin to enter PhpMyAdmin"
+	echo "http://192.168.0.38/phpmyadmin or http://$DOMAIN/phpmyadmin to enter PhpMyAdmin"
 fi
 
 # Fail2ban
 apt-get -y install fail2ban
-cp /usr/etc/fail2ban/jail.conf /user/etc/fail2ban/jail.local
+cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 service fail2ban restart
 
 # Let's Encrypt
 apt-get install -y letsencrypt
-letsencrypt certonly --webroot -w ~/var/www/$DOMAIN -d  $DOMAIN -d www.$DOMAIN
+letsencrypt certonly --webroot -w /var/www/$DOMAIN -d  $DOMAIN -d www.$DOMAIN
 
 apt-get -y autoremove
 apt-get -y autoclean
