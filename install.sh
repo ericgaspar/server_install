@@ -40,10 +40,10 @@ server {
 	listen 80 default_server;
 	listen [::]:80 default_server;
 
-#	listen 443 ssl http2 default_server;
-#	listen [::]:443 ssl http2 default_server;
+	listen 443 ssl http2 default_server;
+	listen [::]:443 ssl http2 default_server;
 	
-	server_name cuboctaedre.xyz;
+	server_name www.cuboctaedre.xyz cuboctaedre.xyz;
 	root /var/www/cuboctaedre.xyz;
 	index index.php index.html index.htm default.html;
 
@@ -65,24 +65,28 @@ server {
 	}
 
 	# Compression
-       gzip on;
-       gzip_disable "msie6";
-       gzip_vary on;
-       gzip_comp_level 6;
-       gzip_buffers 16 8k;
-       gzip_http_version 1.1;
-       gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+    	gzip on;
+    	gzip_disable "msie6";
+    	gzip_vary on;
+    	gzip_comp_level 6;
+    	gzip_buffers 16 8k;
+    	gzip_http_version 1.1;
+    	gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
 	# Improve HTTPS performance with session resumption
-    #   ssl_session_cache shared:SSL:10m;
-    #   ssl_session_timeout 5m;
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_timeout 5m;
+
+    # ssl
+        ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;
 
 	# Enable server-side protection against BEAST attacks
-    #    ssl_prefer_server_ciphers on;
-    #    ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+        ssl_prefer_server_ciphers on;
+        ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
 
     # Disable SSLv3
-    #   ssl_protocols TLSv1.1 TLSv1.2;
+        ssl_protocols TLSv1.1 TLSv1.2;
 
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
@@ -95,7 +99,8 @@ server {
 }
 EOF
 
-service nginx restart
+nginx -t
+systemctl restart nginx
 
 mkdir -p /var/www/$DOMAIN
 cat > /var/www/$DOMAIN/index.php << "EOF"
@@ -143,7 +148,12 @@ cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 
 # Let's Encrypt
 apt-get install -y letsencrypt
+systemctl stop nginx
 letsencrypt certonly --webroot -w /var/www/$DOMAIN -d  $DOMAIN -d www.$DOMAIN
+
+# Renew Let's Encrypt script
+crontab -e
+30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
 
 # Dhparam
 # mkdir -p /etc/nginx/ssl
