@@ -39,8 +39,8 @@ server {
 	listen 80 default_server;
 	listen [::]:80 default_server;
 
-	listen 443 ssl http2 default_server;
-	listen [::]:443 ssl http2 default_server;
+	#listen 443 ssl http2 default_server;
+	#listen [::]:443 ssl http2 default_server;
 	
 	server_name www.cuboctaedre.xyz cuboctaedre.xyz;
 	root /var/www/cuboctaedre.xyz;
@@ -73,19 +73,19 @@ server {
     	gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
 	# Improve HTTPS performance with session resumption
-        ssl_session_cache shared:SSL:10m;
-        ssl_session_timeout 5m;
+    #    ssl_session_cache shared:SSL:10m;
+    #    ssl_session_timeout 5m;
 
     # ssl
     #    ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;
     #    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;
 
 	# Enable server-side protection against BEAST attacks
-        ssl_prefer_server_ciphers on;
-        ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+    #   ssl_prefer_server_ciphers on;
+    #   ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
 
     # Disable SSLv3
-        ssl_protocols TLSv1.1 TLSv1.2;
+    #   ssl_protocols TLSv1.1 TLSv1.2;
 
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
