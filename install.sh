@@ -135,12 +135,11 @@ sed -i 's/^bind-address/#bind-address/' /etc/mysql/mariadb.cnf
 sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mariadb.cnf
 
 # PhpMyAdmin
-#read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
-#if [ "$prompt" = "y" ]; then
-#	apt-get install -y phpmyadmin
-#	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
-#	echo "http://192.168.0.38/phpmyadmin or http://$DOMAIN/phpmyadmin to enter PhpMyAdmin"
-#fi
+read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
+if [ "$prompt" = "y" ]; then
+	apt-get install -y phpmyadmin
+	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
+fi
 
 # Fail2ban
 apt-get -y install fail2ban
