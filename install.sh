@@ -6,9 +6,8 @@ if [ "$(whoami)" != "root" ]; then
 fi
 
 # Ask for personnal Domain name
-read -p "What is you Domain Name ? : " DOMAIN
+read -p "What is your Domain-Name ? : " DOMAIN
 echo
-#DOMAIN = "cuboctaedre.xyz"
 
 # Solve Perl language issue
 export LANGUAGE=fr_FR.UTF-8
@@ -78,8 +77,8 @@ server {
         ssl_session_timeout 5m;
 
     # ssl
-        ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;
+    #    ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;
+    #    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;
 
 	# Enable server-side protection against BEAST attacks
         ssl_prefer_server_ciphers on;
@@ -135,25 +134,25 @@ mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT 
 #sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
 
 # PhpMyAdmin
-read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
-if [ "$prompt" = "y" ]; then
-	apt-get install -y phpmyadmin
-	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
-	echo "http://192.168.0.38/phpmyadmin or http://$DOMAIN/phpmyadmin to enter PhpMyAdmin"
-fi
+#read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
+#if [ "$prompt" = "y" ]; then
+#	apt-get install -y phpmyadmin
+#	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
+#	echo "http://192.168.0.38/phpmyadmin or http://$DOMAIN/phpmyadmin to enter PhpMyAdmin"
+#fi
 
 # Fail2ban
 apt-get -y install fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 
 # Let's Encrypt
-apt-get install -y letsencrypt
-systemctl stop nginx
-letsencrypt certonly --webroot -w /var/www/$DOMAIN -d  $DOMAIN -d www.$DOMAIN
+#apt-get install -y letsencrypt
+#systemctl stop nginx
+#letsencrypt certonly --webroot -w /var/www/$DOMAIN -d $DOMAIN -d www.$DOMAIN
 
 # Renew Let's Encrypt script
-crontab -e
-30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
+#crontab -e
+#30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
 
 # Dhparam
 # mkdir -p /etc/nginx/ssl
@@ -178,14 +177,14 @@ echo "NGinx configuration folder:       /etc/nginx"
 echo "NGinx default site configuration: /etc/nginx/sites-enabled/default"
 echo "NGinx default HTML root:          /var/www/$DOMAIN"
 echo ""
-#echo "Installation script  log file:  $LOG_FILE"
-#echo ""
-#echo "Notes: If you use IpTables add the following rules"
-#echo "iptables -A INPUT -i lo -s localhost -d localhost -j ACCEPT"
-#echo "iptables -A OUTPUT -o lo -s localhost -d localhost -j ACCEPT"
-#echo "iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
-#echo "iptables -A INPUT  -p tcp --dport http -j ACCEPT"
-#echo ""
+echo "Installation script  log file:  $LOG_FILE"
+echo ""
+echo "Notes: If you use IpTables add the following rules"
+echo "iptables -A INPUT -i lo -s localhost -d localhost -j ACCEPT"
+echo "iptables -A OUTPUT -o lo -s localhost -d localhost -j ACCEPT"
+echo "iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
+echo "iptables -A INPUT  -p tcp --dport http -j ACCEPT"
+echo ""
 echo "------------------------------------------------------------------------------"
 echo ""
 
