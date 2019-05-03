@@ -123,12 +123,12 @@ chmod -R g+rw /var/www
 setfacl -d -R -m g::rw /var/www
 
 # MySQL
-apt-get -y install mysql-server --fix-missing
+apt-get -y install mysql-server mysql-client
 
-read -s -p "Type the password for MySQL: " mysqlPass
-echo
+#read -s -p "Type the password for MySQL: " mysqlPass
+#echo
 
-mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
+#mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
 
 #sed -i 's/^bind-address/#bind-address/' /etc/mysql/mysql.conf.d/mysqld.cnf
 #sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mysql.conf.d/mysqld.cnf
@@ -144,6 +144,17 @@ mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT 
 # Fail2ban
 apt-get -y install fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+
+echo "
+[modsecurity-$DOMAIN]
+enabled  = true
+filter   = modsecurity
+action   = iptables-multiport[name=ModSecurity, port=\"http,https\"]
+           sendmail-buffered[name=ModSecurity, lines=10, dest=webmaster@$DOMAIN]
+logpath  = ~/var/log/$DOMAIN/log/*error.log
+bantime  = 600
+maxretry = 3
+" >> /etc/fail2ban/jail.local
 
 # Let's Encrypt
 #apt-get install -y letsencrypt
