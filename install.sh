@@ -45,10 +45,7 @@ apt-get install -y git vim letsencrypt acl
 
 # NGinx
 # https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-9#step-5-–-setting-up-server-blocks
-apt-get install -y nginx
-
-# PHP
-apt-get install -y php7.0 php7.0-fpm php7.0-cli php7.0-opcache php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
+apt-get install -y nginx php-fpm
 
 update-rc.d nginx defaults
 update-rc.d php7.0-fpm defaults
@@ -56,48 +53,51 @@ update-rc.d php7.0-fpm defaults
 sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.0/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
 
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/$DOMAIN
+
 cat > /etc/nginx/sites-available/$DOMAIN << "EOF"
 # Default server
 server {
 	listen 80 default_server;
-	#listen [::]:80 default_server;
+	listen [::]:80 default_server;
 
-	listen 443 ssl http2 default_server;
+	#listen 443 ssl http2 default_server;
 	#listen [::]:443 ssl http2 default_server;
 	
 	server_name www.cuboctaedre.xyz cuboctaedre.xyz;
 	root /var/www/cuboctaedre.xyz;
 	index index.php index.html index.htm;
 
-	location ~ /.well-known {
-                allow all;
-    }
+	#location ~ /.well-known {
+    #            allow all;
+    #}
 
-	location / {
-		try_files $uri $uri/ =404;
-	}
+	#location / {
+	#	try_files $uri $uri/ =404;
+	#}
 
 	# Pass the PHP scripts to FastCGI server
 	location ~ \.php$ {
 		include snippets/fastcgi-php.conf;
 		fastcgi_pass unix:/run/php/php7.0-fpm.sock;
+		fastcgi_pass 127.0.0.1:9000
 	}
 
 	# Optimize static file serving
-	location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml)$ {
-		access_log off;
-		log_not_found off;
-		expires 60d;
-	}
+	#location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml)$ {
+	#	access_log off;
+	#	log_not_found off;
+	#	expires 60d;
+	#}
 
 	# Compression
-    	gzip on;
-    	gzip_disable "msie6";
-    	gzip_vary on;
-    	gzip_comp_level 6;
-    	gzip_buffers 16 8k;
-    	gzip_http_version 1.1;
-    	gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+    #	gzip on;
+    #	gzip_disable "msie6";
+    #	gzip_vary on;
+    #	gzip_comp_level 6;
+    #	gzip_buffers 16 8k;
+    #	gzip_http_version 1.1;
+    #	gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
 	# Improve HTTPS performance with session resumption
     #    ssl_session_cache shared:SSL:10m;
@@ -108,24 +108,24 @@ server {
     #    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;
 
     # Disable SSLv3
-       ssl_protocols TLSv1.1 TLSv1.2;
+    #   ssl_protocols TLSv1.1 TLSv1.2;
 
 	# Enable server-side protection against BEAST attacks
-       ssl_prefer_server_ciphers on;
-       ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+    #   ssl_prefer_server_ciphers on;
+    #   ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
 
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
     #   ssl_dhparam /etc/ssl/certs/dhparam.pem;
 
 	# deny access to .htaccess files, should an Apache document root conflict with nginx
-	location ~ /\.ht {
-		deny all;
-	}
+	#location ~ /\.ht {
+	#	deny all;
+	#}
 }
 EOF
 
-ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enable/$DOMAIN
+ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/$DOMAIN
 
 mkdir -p /var/www/$DOMAIN
 rm -rf /var/www/html
