@@ -1,26 +1,15 @@
 #!/bin/bash
 
-####################################################################################
-#	LEMP server for Raspberry Pi                                               #
-#	This script will install Nginx, PHP, MySQL, PHPMyAdmin                     #
-#	4/5/2019                                                                   #
-####################################################################################
-
-
 if [ "$(whoami)" != "root" ]; then
 	echo "Run script as ROOT ! (sudo bash install.sh)"
 	exit
 fi
 
-# Define user Domain Name
-echo "------------------------------------------------------------------------------"
-echo " NGinx + PHP7-FPM + MySQL installation"
-echo "------------------------------------------------------------------------------"
-read -p " Enter your Domain Name: " DOMAIN
-echo "------------------------------------------------------------------------------"
+# Ask for personnal Domain name
+read -p "What is your Domain-Name ? : " DOMAIN
 echo
 
-# Solve locales Perl language issue
+# Solve Perl language issue
 export LANGUAGE=fr_FR.UTF-8
 export LANG=fr_FR.UTF-8
 export LC_ALL=fr_FR.UTF-8
@@ -35,10 +24,7 @@ apt-get install -y rpi-update
 
 apt-get install -y git vim acl
 
-# Nginx
 apt-get install -y nginx
-
-# PHP
 apt-get install -y php7.0 php7.0-fpm php7.0-cli php7.0-opcache php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 
 update-rc.d nginx defaults
@@ -47,7 +33,7 @@ update-rc.d php7.0-fpm defaults
 sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.0/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
 
-cat > /etc/nginx/sites-enabled/default <<EOF
+cat > /etc/nginx/sites-enabled/default << "EOF"
 # Default server
 server {
 	listen 80 default_server;
@@ -56,7 +42,7 @@ server {
 	#listen 443 ssl http2 default_server;
 	#listen [::]:443 ssl http2 default_server;
 	
-	server_name www.$DOMAIN $DOMAIN;
+	server_name www.cuboctaedre.xyz cuboctaedre.xyz;
 	root /var/www/cuboctaedre.xyz;
 	index index.php index.html index.htm default.html;
 
@@ -91,8 +77,8 @@ server {
     #    ssl_session_timeout 5m;
 
     # ssl
-    #    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
-    #    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
+    #    ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;
+    #    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;
 
 	# Enable server-side protection against BEAST attacks
     #   ssl_prefer_server_ciphers on;
@@ -137,12 +123,12 @@ chmod -R g+rw /var/www
 setfacl -d -R -m g::rw /var/www
 
 # MySQL
-apt-get install -y mysql-server mysql-client
+apt-get -y install mysql-server mysql-client
 
 read -s -p "Type the password for MySQL: " mysqlPass
 echo
 
-mysql --user=root --password="$mysqlPass" --database="mysql" --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
+mysql --user=root --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
 #mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
 
 sed -i 's/^bind-address/#bind-address/' /etc/mysql/mariadb.cnf
@@ -156,7 +142,7 @@ if [ "$prompt" = "y" ]; then
 fi
 
 # Fail2ban
-apt-get install -y fail2ban
+apt-get -y install fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 
 echo "
@@ -190,26 +176,30 @@ service php7.0-fpm restart
 service mysql restart
 service fail2ban restart
 
-apt-get autoremove -y
-apt-get autoclean -y
+apt-get -y autoremove
+apt-get -y autoclean
 
 # Summary
-echo
+echo ""
 echo "------------------------------------------------------------------------------"
 echo "               NGinx + PHP7-FPM + MySQL installation finished"
 echo "------------------------------------------------------------------------------"
-echo " NGinx configuration folder:       /etc/nginx"
-echo " NGinx default site configuration: /etc/nginx/sites-enabled/default"
-echo " NGinx default HTML root:          /var/www/$DOMAIN"
-echo
-echo " HTML page:                        `hostname -I`"
-echo " To acces phpMyAdmin:              $DOMAIN/phpmyadmin"
-echo " User:                             root"
-echo " Password:                         $mysqlPass"
+echo "NGinx configuration folder:       /etc/nginx"
+echo "NGinx default site configuration: /etc/nginx/sites-enabled/default"
+echo "NGinx default HTML root:          /var/www/$DOMAIN"
+echo ""
+echo "Installation script  log file:  $LOG_FILE"
+echo ""
+echo "Notes: If you use IpTables add the following rules"
+echo "iptables -A INPUT -i lo -s localhost -d localhost -j ACCEPT"
+echo "iptables -A OUTPUT -o lo -s localhost -d localhost -j ACCEPT"
+echo "iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
+echo "iptables -A INPUT  -p tcp --dport http -j ACCEPT"
+echo ""
 echo "------------------------------------------------------------------------------"
-echo
+echo ""
 
-read -p "Do you want to access Raspi-config? <y/N> " prompt
+read -p "Do you want to access Raspi-config ? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
 	raspi-config
 else
