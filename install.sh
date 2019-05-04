@@ -53,7 +53,7 @@ update-rc.d php7.0-fpm defaults
 sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.0/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
 
-cp /etc/nginx/sites-available/default /etc/nginx/sites-available/$DOMAIN
+#cp /etc/nginx/sites-available/default /etc/nginx/sites-available/$DOMAIN
 
 cat > /etc/nginx/sites-available/$DOMAIN <<EOF
 # Default server
@@ -136,7 +136,7 @@ cat > /var/www/$DOMAIN/index.php << "EOF"
 EOF
 
 nginx -t
-systemctl reload nginx
+service nginx reload
 
 usermod -a -G www-data pi
 chown -R pi:www-data /var/www
@@ -153,8 +153,6 @@ echo "--------------------------------------------------------------------------
 echo
 # Probleme to resolve
 mysql --user=root --password="$mysqlPass" --database="mysql" --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
-#mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
-
 sed -i 's/^bind-address/#bind-address/' /etc/mysql/mariadb.cnf
 sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mariadb.cnf
 
@@ -172,7 +170,7 @@ fi
 apt-get install -y ufw
 ufw enable
 ufw allow 'Nginx Full' -y
-ufw delete allow 'Nginx HTTP'
+ufw delete allow 'Nginx HTTP' -y
 
 # Fail2ban
 apt-get install -y fail2ban
@@ -199,8 +197,8 @@ if [ "$prompt" = "y" ]; then
 	letsencrypt certonly --webroot -w /var/www/$DOMAIN -d $DOMAIN -d www.$DOMAIN
 fi
 
-sed -i 's/#    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;/ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;/' /etc/nginx/sites-available/$DOMAIN
-sed -i 's/#    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;/ssl_certificate /etc/letsencrypt/live/$DOMAIN/privkey.pem;/' /etc/nginx/sites-available/$DOMAIN
+#sed -i 's/#    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;/ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;/' /etc/nginx/sites-available/$DOMAIN
+#sed -i 's/#    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;/ssl_certificate /etc/letsencrypt/live/$DOMAIN/privkey.pem;/' /etc/nginx/sites-available/$DOMAIN
 
 
 # Renew Let's Encrypt script
