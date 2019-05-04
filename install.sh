@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #########################################################################
-#	LEMP server for Raspberry Pi                                    #
-#	This script will install Nginx, PHP, MySQL, PHPMyAdmin          #
-#	4/5/2019                                                        #
+#	LEMP server for Raspberry Pi                                        #
+#	This script will install Nginx, PHP, MySQL, PHPMyAdmin              #
+#	4/5/2019                                                            #
 #########################################################################
 
 
@@ -13,7 +13,9 @@ if [ "$(whoami)" != "root" ]; then
 fi
 
 # Define user Domain Name
+echo "------------------------------------------------------------------------------"
 read -p "What is your Domain Name?: " DOMAIN
+echo "------------------------------------------------------------------------------"
 echo
 
 # Solve locales Perl language issue
@@ -190,20 +192,20 @@ apt-get -y autoremove
 apt-get -y autoclean
 
 # Summary
-echo ""
+echo
 echo "------------------------------------------------------------------------------"
 echo "               NGinx + PHP7-FPM + MySQL installation finished"
 echo "------------------------------------------------------------------------------"
 echo "NGinx configuration folder:       /etc/nginx"
 echo "NGinx default site configuration: /etc/nginx/sites-enabled/default"
 echo "NGinx default HTML root:          /var/www/$DOMAIN"
-echo ""
+echo
 echo "To acces phpMyAdmin:              `hostname -I` or $DOMAIN/phpmyadmin"
 echo "User:                             root"
 echo "Password:                         $mysqlPass"
-echo ""
+echo
 echo "------------------------------------------------------------------------------"
-echo ""
+echo
 
 read -p "Do you want to start raspi-config? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
