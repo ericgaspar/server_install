@@ -55,7 +55,7 @@ sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/n
 
 cp /etc/nginx/sites-available/default /etc/nginx/sites-available/$DOMAIN
 
-cat > /etc/nginx/sites-available/$DOMAIN << "EOF"
+cat > /etc/nginx/sites-available/$DOMAIN <<EOF
 # Default server
 server {
 	listen 80 default_server;
@@ -64,8 +64,8 @@ server {
 	listen 443 ssl http2 default_server;
 	listen [::]:443 ssl http2 default_server;
 	
-	server_name www.cuboctaedre.xyz cuboctaedre.xyz;
-	root /var/www/cuboctaedre.xyz;
+	server_name www.$DOMAIN $DOMAIN;
+	root /var/www/$DOMAIN;
 	index index.php index.html index.htm;
 
 	#location ~ /.well-known {
@@ -80,7 +80,6 @@ server {
 	location ~ \.php$ {
 		include snippets/fastcgi-php.conf;
 		fastcgi_pass unix:/run/php/php7.0-fpm.sock;
-		fastcgi_pass 127.0.0.1:9000
 	}
 
 	# Optimize static file serving
@@ -104,8 +103,8 @@ server {
         ssl_session_timeout 5m;
 
     # ssl
-    #    ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;
-    #    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;
+    #    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    #    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
 
     # Disable SSLv3
        ssl_protocols TLSv1.1 TLSv1.2;
@@ -172,7 +171,7 @@ fi
 # Install a firewall
 apt-get install -y ufw
 ufw enable
-ufw allow 'Nginx Full'
+ufw allow 'Nginx Full' -y
 ufw delete allow 'Nginx HTTP'
 
 # Fail2ban
@@ -200,8 +199,8 @@ if [ "$prompt" = "y" ]; then
 	letsencrypt certonly --webroot -w /var/www/$DOMAIN -d $DOMAIN -d www.$DOMAIN
 fi
 
-sed -i 's/#    ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;/ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;/' /etc/nginx/sites-available/$DOMAIN
-sed -i 's/#    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;/ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;/' /etc/nginx/sites-available/$DOMAIN
+sed -i 's/#    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;/ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;/' /etc/nginx/sites-available/$DOMAIN
+sed -i 's/#    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;/ssl_certificate /etc/letsencrypt/live/$DOMAIN/privkey.pem;/' /etc/nginx/sites-available/$DOMAIN
 
 
 # Renew Let's Encrypt script
