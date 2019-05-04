@@ -14,9 +14,9 @@ fi
 
 # Define user Domain Name
 echo "------------------------------------------------------------------------------"
-echo "NGinx + PHP7-FPM + MySQL installation"
+echo " NGinx + PHP7-FPM + MySQL installation"
 echo "------------------------------------------------------------------------------"
-read -p "Enter your Domain Name: " DOMAIN
+read -p " Enter your Domain Name: " DOMAIN
 echo "------------------------------------------------------------------------------"
 echo
 
@@ -27,7 +27,6 @@ export LC_ALL=fr_FR.UTF-8
 locale-gen fr_FR.UTF-8
 dpkg-reconfigure locales
 
-# Update de Raspberry Pi
 apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
@@ -36,7 +35,7 @@ apt-get install -y rpi-update
 
 apt-get install -y git vim acl
 
-# NGinx
+# Nginx
 apt-get install -y nginx
 
 # PHP
@@ -58,8 +57,8 @@ server {
 	#listen [::]:443 ssl http2 default_server;
 	
 	server_name www.$DOMAIN $DOMAIN;
-	root /var/www/$DOMAIN;
-	index index.php index.html index.htm;
+	root /var/www/cuboctaedre.xyz;
+	index index.php index.html index.htm default.html;
 
 	location / {
 		try_files $uri $uri/ =404;
@@ -117,7 +116,7 @@ nginx -t
 systemctl restart nginx
 
 mkdir -p /var/www/$DOMAIN
-cat > /var/www/$DOMAIN/index.php <<EOF
+cat > /var/www/$DOMAIN/index.php << "EOF"
 <?php
 class Application
 {
@@ -138,12 +137,13 @@ chmod -R g+rw /var/www
 setfacl -d -R -m g::rw /var/www
 
 # MySQL
-apt-get -y install mysql-server mysql-client
+apt-get install -y mysql-server mysql-client
 
 read -s -p "Type the password for MySQL: " mysqlPass
 echo
 
-mysql --user=root --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
+mysql --user=root --password="$mysqlPass" --database="mysql" --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
+#mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
 
 sed -i 's/^bind-address/#bind-address/' /etc/mysql/mariadb.cnf
 sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mariadb.cnf
@@ -198,21 +198,20 @@ echo
 echo "------------------------------------------------------------------------------"
 echo "               NGinx + PHP7-FPM + MySQL installation finished"
 echo "------------------------------------------------------------------------------"
-echo "NGinx configuration folder:       /etc/nginx"
-echo "NGinx default site configuration: /etc/nginx/sites-enabled/default"
-echo "NGinx default HTML root:          /var/www/$DOMAIN"
+echo " NGinx configuration folder:       /etc/nginx"
+echo " NGinx default site configuration: /etc/nginx/sites-enabled/default"
+echo " NGinx default HTML root:          /var/www/$DOMAIN"
 echo
-echo "To acces phpMyAdmin:              `hostname -I` or $DOMAIN/phpmyadmin"
-echo "User:                             root"
-echo "Password:                         $mysqlPass"
+echo " HTML page:                        `hostname -I`"
+echo " To acces phpMyAdmin:              $DOMAIN/phpmyadmin"
+echo " User:                             root"
+echo " Password:                         $mysqlPass"
 echo "------------------------------------------------------------------------------"
 echo
 
-read -p "Do you want to start raspi-config? <y/N> " prompt
+read -p "Do you want to access Raspi-config? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
 	raspi-config
 else
-	echo "------------------------------------------------------------------------------"
-	echo "                         Installation finished"
-	echo "------------------------------------------------------------------------------"
+	echo "The installation is finished"	
 fi
