@@ -46,7 +46,7 @@ update-rc.d php7.0-fpm defaults
 sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.0/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
 
-cat > /etc/nginx/sites-enabled/default << "EOF"
+cat > /etc/nginx/sites-enabled/default <<EOF
 # Default server
 server {
 	listen 80 default_server;
@@ -55,8 +55,8 @@ server {
 	#listen 443 ssl http2 default_server;
 	#listen [::]:443 ssl http2 default_server;
 	
-	server_name www.cuboctaedre.xyz cuboctaedre.xyz;
-	root /var/www/cuboctaedre.xyz;
+	server_name www.$DOMAIN $DOMAIN;
+	root /var/www/$DOMAIN;
 	index index.php index.html index.htm default.html;
 
 	location / {
@@ -90,8 +90,8 @@ server {
     #    ssl_session_timeout 5m;
 
     # ssl
-    #    ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;
-    #    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;
+    #    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    #    ssl_certificate_key /etc/letsencrypt/live/$DOMAINunours/privkey.pem;
 
 	# Enable server-side protection against BEAST attacks
     #   ssl_prefer_server_ciphers on;
@@ -142,7 +142,7 @@ echo "--------------------------------------------------------------------------
 read -s -p " Type the password for MySQL: " mysqlPass
 echo "------------------------------------------------------------------------------"
 echo
-
+# Probleme to resolve
 mysql --user=root --password="$mysqlPass" --database="mysql" --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
 #mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
 
@@ -206,13 +206,11 @@ echo " NGinx configuration folder:       /etc/nginx"
 echo " NGinx default site configuration: /etc/nginx/sites-enabled/default"
 echo " NGinx default HTML root:          /var/www/$DOMAIN"
 echo
-echo " HTML page:                        `hostname -I`"
+echo " HTML page:                        $DOMAIN or `hostname -I`"
 echo " To acces phpMyAdmin:              $DOMAIN/phpmyadmin"
 echo " User:                             root"
 echo " Password:                         $mysqlPass"
 echo "------------------------------------------------------------------------------"
-echo
-
 read -p "Do you want to start raspi-config? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
 	raspi-config
