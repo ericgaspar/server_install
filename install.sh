@@ -2,7 +2,7 @@
 
 ####################################################################################
 #	LEMP server for Raspberry Pi                                               #
-#	This script will install Nginx, PHP, MySQL, PHPMyAdmin                     #
+#	This script will install Nginx, PHP, MySQL, phpMyAdmin                     #
 #	4/5/2019                                                                   #
 ####################################################################################
 
@@ -26,6 +26,7 @@ export LC_ALL=fr_FR.UTF-8
 locale-gen fr_FR.UTF-8
 dpkg-reconfigure locales
 
+# Update de Raspberry Pi
 apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
