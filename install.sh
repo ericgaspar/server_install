@@ -138,7 +138,9 @@ setfacl -d -R -m g::rw /var/www
 # MySQL
 apt-get -y install mysql-server mysql-client
 
-read -s -p "Type the password for MySQL: " mysqlPass
+echo "------------------------------------------------------------------------------"
+read -s -p " Type the password for MySQL: " mysqlPass
+echo "------------------------------------------------------------------------------"
 echo
 
 mysql --user=root --password="$mysqlPass" --database="mysql" --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
@@ -148,7 +150,10 @@ sed -i 's/^bind-address/#bind-address/' /etc/mysql/mariadb.cnf
 sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mariadb.cnf
 
 # PhpMyAdmin
-read -p "Do you want to install PhpMyAdmin? <y/N> " prompt
+echo "------------------------------------------------------------------------------"
+read -p " Do you want to install PhpMyAdmin? <y/N> " prompt
+echo "------------------------------------------------------------------------------"
+echo
 if [ "$prompt" = "y" ]; then
 	apt-get install -y phpmyadmin
 	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
