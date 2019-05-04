@@ -42,9 +42,10 @@ apt-get dist-upgrade -y
 
 apt-get install -y rpi-update
 
-apt-get install -y git vim acl
+apt-get install -y git vim letsencrypt acl
 
 # NGinx
+# https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-9#step-5-–-setting-up-server-blocks
 apt-get install -y nginx
 
 # PHP
@@ -55,6 +56,8 @@ update-rc.d php7.0-fpm defaults
 
 sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.0/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
+
+ln -s /etc/nginx/sites-available/cuboctaedre.xyz /etc/nginx/sites-enabled/
 
 cat > /etc/nginx/sites-enabled/default << "EOF"
 # Default server
@@ -68,6 +71,10 @@ server {
 	server_name www.cuboctaedre.xyz cuboctaedre.xyz;
 	root /var/www/cuboctaedre.xyz;
 	index index.php index.html index.htm default.html;
+
+	location ~ /.well-known {
+                allow all;
+    }
 
 	location / {
 		try_files $uri $uri/ =404;
@@ -103,12 +110,12 @@ server {
     #    ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;
     #    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;
 
+    # Disable SSLv3
+    #   ssl_protocols TLSv1.1 TLSv1.2;
+
 	# Enable server-side protection against BEAST attacks
     #   ssl_prefer_server_ciphers on;
     #   ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
-
-    # Disable SSLv3
-    #   ssl_protocols TLSv1.1 TLSv1.2;
 
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
@@ -120,6 +127,23 @@ server {
 	}
 }
 EOF
+
+
+#a faire
+#sid -i completé le script ....
+#decommenté cette ligne
+#...
+#http {
+#    ...
+#    server_names_hash_bucket_size 64;
+#    ...
+#}
+#...
+
+#nano /etc/nginx/nginx.conf
+#
+
+#https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-9#step-5-–-setting-up-server-blocks
 
 nginx -t
 systemctl restart nginx
@@ -169,6 +193,12 @@ if [ "$prompt" = "y" ]; then
 	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
 fi
 
+# Install a firewall
+apt-get install -y ufw
+ufw enable
+ufw allow 'Nginx Full'
+ufw delete allow 'Nginx HTTP'
+
 # Fail2ban
 apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
@@ -185,19 +215,23 @@ maxretry = 3
 " >> /etc/fail2ban/jail.local
 
 # Let's Encrypt
-#apt-get install -y letsencrypt
-#systemctl stop nginx
-#letsencrypt certonly --webroot -w /var/www/$DOMAIN -d $DOMAIN -d www.$DOMAIN
+#https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-debian-9
+
+echo "------------------------------------------------------------------------------"
+read -p " Do you want to run Let's encrypt? <y/N> " prompt
+echo "------------------------------------------------------------------------------"
+echo
+if [ "$prompt" = "y" ]; then
+	letsencrypt certonly --webroot -w /var/www/$DOMAIN -d $DOMAIN -d www.$DOMAIN
+fi
+
 
 # Renew Let's Encrypt script
 #crontab -e
 #30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
 
 # Dhparam
-# mkdir -p /etc/nginx/ssl
-# openssl rand 48 -out /etc/nginx/ssl/ticket.key
-# openssl dhparam -out /etc/nginx/ssl/dhparam4.pem 2048
-# echo "ssl_dhparam /etc/nginx/ssl/dhparam4.pem;" >>  /etc/nginx/conf.d/$DOMAIN
+openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
 
 service nginx restart
 service php7.0-fpm restart
@@ -215,6 +249,8 @@ echo "--------------------------------------------------------------------------
 echo " NGinx configuration folder:       /etc/nginx"
 echo " NGinx default site configuration: /etc/nginx/sites-enabled/default"
 echo " NGinx default HTML root:          /var/www/$DOMAIN"
+echo " NGinx access logs:                /var/log/nginx/access.log"
+echo " NGinx error logs:                 /var/log/nginx/error.log"
 echo
 echo " HTML page:                        $DOMAIN or `hostname -I`"
 echo " Acces to phpMyAdmin:              $DOMAIN/phpmyadmin"
