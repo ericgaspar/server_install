@@ -1,19 +1,12 @@
-# Script server nginx
+# Raspberry Pi LEMP server install script
 
-## installation
+## Installation
 
-- git 
-- vim
-- acl
-- nginx
-- php7
-- mysql
-- phpmyadmin
-- fail2ban
-- let's encrypt
-- dhparam
-
-## To install the script
 `wget https://raw.githubusercontent.com/ericgaspar/server_install/master/install.sh`
 
 `sudo bash install.sh`
+
+## To do
+- Let's Encrypt 
+- DHParam
+
