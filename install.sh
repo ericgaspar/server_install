@@ -176,9 +176,9 @@ maxretry = 3
 " >> /etc/fail2ban/jail.local
 
 # Let's Encrypt
-#apt-get install -y letsencrypt
-#systemctl stop nginx
-#letsencrypt certonly --webroot -w /var/www/$DOMAIN -d $DOMAIN -d www.$DOMAIN
+apt-get install -y letsencrypt
+systemctl stop nginx
+letsencrypt certonly --webroot -w /var/www/$DOMAIN -d $DOMAIN -d www.$DOMAIN
 
 # Renew Let's Encrypt script
 #crontab -e
