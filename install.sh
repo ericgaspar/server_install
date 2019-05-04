@@ -14,10 +14,19 @@ fi
 # Define user Domain Name
 echo "------------------------------------------------------------------------------"
 echo " NGinx + PHP7-FPM + MySQL installation"
+echo " This script will install a LEMP server on a Raspberry Pi"
 echo "------------------------------------------------------------------------------"
 read -p " Enter your Domain Name: " DOMAIN
 echo "------------------------------------------------------------------------------"
 echo
+# Set time zone
+echo "------------------------------------------------------------------------------"
+read -p " Do you want to change the time zone? <y/N> " prompt
+echo "------------------------------------------------------------------------------"
+echo
+if [ "$prompt" = "y" ]; then
+	dpkg-reconfigure tzdata
+fi
 
 # Solve Perl language issue
 export LANGUAGE=fr_FR.UTF-8
