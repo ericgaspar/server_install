@@ -42,7 +42,7 @@ apt-get dist-upgrade -y
 
 apt-get install -y rpi-update
 
-apt-get install -y git vim letsencrypt acl
+apt-get install -y git vim certbot acl
 
 # NGinx
 # https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-9#step-5-–-setting-up-server-blocks
@@ -57,20 +57,20 @@ update-rc.d php7.0-fpm defaults
 sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.0/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
 
-ln -s /etc/nginx/sites-available/cuboctaedre.xyz /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/$DOMAIN.conf /etc/nginx/sites-enabled/
 
-cat > /etc/nginx/sites-enabled/default << "EOF"
+cat > /etc/nginx/sites-enabled/$DOMAIN << "EOF"
 # Default server
 server {
 	listen 80 default_server;
-	listen [::]:80 default_server;
+	#listen [::]:80 default_server;
 
 	#listen 443 ssl http2 default_server;
 	#listen [::]:443 ssl http2 default_server;
 	
 	server_name www.cuboctaedre.xyz cuboctaedre.xyz;
 	root /var/www/cuboctaedre.xyz;
-	index index.php index.html index.htm default.html;
+	index index.php index.html index.htm;
 
 	location ~ /.well-known {
                 allow all;
@@ -111,11 +111,11 @@ server {
     #    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;
 
     # Disable SSLv3
-    #   ssl_protocols TLSv1.1 TLSv1.2;
+       ssl_protocols TLSv1.1 TLSv1.2;
 
 	# Enable server-side protection against BEAST attacks
-    #   ssl_prefer_server_ciphers on;
-    #   ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+       ssl_prefer_server_ciphers on;
+       ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
 
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
@@ -128,37 +128,14 @@ server {
 }
 EOF
 
-
-#a faire
-#sid -i completé le script ....
-#decommenté cette ligne
-#...
-#http {
-#    ...
-#    server_names_hash_bucket_size 64;
-#    ...
-#}
-#...
-
-#nano /etc/nginx/nginx.conf
-#
-
-#https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-9#step-5-–-setting-up-server-blocks
-
 nginx -t
-systemctl restart nginx
+systemctl reload nginx
 
 mkdir -p /var/www/$DOMAIN
 cat > /var/www/$DOMAIN/index.php << "EOF"
 <?php
-class Application
-{
-	public function __construct()
-	{
-		phpinfo();
-	}
-}
-$application = new Application();
+  phpinfo();
+?>
 EOF
 
 rm -rf /var/www/html
@@ -170,7 +147,7 @@ chmod -R g+rw /var/www
 setfacl -d -R -m g::rw /var/www
 
 # MySQL
-apt-get -y install mysql-server mysql-client
+apt-get -y install mysql-server
 
 echo "------------------------------------------------------------------------------"
 read -s -p " Type the password for MySQL: " mysqlPass
@@ -215,7 +192,7 @@ maxretry = 3
 " >> /etc/fail2ban/jail.local
 
 # Let's Encrypt
-#https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-debian-9
+# https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-debian-9
 
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to run Let's encrypt? <y/N> " prompt
@@ -224,6 +201,10 @@ echo
 if [ "$prompt" = "y" ]; then
 	letsencrypt certonly --webroot -w /var/www/$DOMAIN -d $DOMAIN -d www.$DOMAIN
 fi
+
+sed -i 's/#listen 443 ssl http2 default_server;/listen 443 ssl http2 default_server;/' /etc/nginx/sites-available/$DOMAIN.conf
+sed -i 's/#    ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;/ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;/' /etc/nginx/sites-available/$DOMAIN.conf
+sed -i 's/#    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;/ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;/' /etc/nginx/sites-available/$DOMAIN.conf
 
 
 # Renew Let's Encrypt script
