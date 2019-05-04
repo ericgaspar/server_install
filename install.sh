@@ -13,11 +13,10 @@ if [ "$(whoami)" != "root" ]; then
 fi
 
 # Define user Domain Name
-echo
 echo "------------------------------------------------------------------------------"
 echo "NGinx + PHP7-FPM + MySQL installation"
 echo "------------------------------------------------------------------------------"
-read -p "What is your Domain Name?: " DOMAIN
+read -p "Enter your Domain Name: " DOMAIN
 echo "------------------------------------------------------------------------------"
 echo
 
@@ -28,7 +27,7 @@ export LC_ALL=fr_FR.UTF-8
 locale-gen fr_FR.UTF-8
 dpkg-reconfigure locales
 
-#Update de Raspberry Pi
+# Update de Raspberry Pi
 apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
@@ -60,7 +59,7 @@ server {
 	
 	server_name www.$DOMAIN $DOMAIN;
 	root /var/www/$DOMAIN;
-	index index.php index.html index.htm default.html;
+	index index.php index.html index.htm;
 
 	location / {
 		try_files $uri $uri/ =404;
@@ -118,7 +117,7 @@ nginx -t
 systemctl restart nginx
 
 mkdir -p /var/www/$DOMAIN
-cat > /var/www/$DOMAIN/index.php << "EOF"
+cat > /var/www/$DOMAIN/index.php <<EOF
 <?php
 class Application
 {
@@ -157,7 +156,7 @@ if [ "$prompt" = "y" ]; then
 fi
 
 # Fail2ban
-apt-get -y install fail2ban
+apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 
 echo "
@@ -191,8 +190,8 @@ service php7.0-fpm restart
 service mysql restart
 service fail2ban restart
 
-apt-get -y autoremove
-apt-get -y autoclean
+apt-get autoremove -y
+apt-get autoclean -y
 
 # Summary
 echo
@@ -206,7 +205,6 @@ echo
 echo "To acces phpMyAdmin:              `hostname -I` or $DOMAIN/phpmyadmin"
 echo "User:                             root"
 echo "Password:                         $mysqlPass"
-echo
 echo "------------------------------------------------------------------------------"
 echo
 
@@ -214,5 +212,7 @@ read -p "Do you want to start raspi-config? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
 	raspi-config
 else
-	echo "The installation is finished"	
+	echo "------------------------------------------------------------------------------"
+	echo "                         Installation finished"
+	echo "------------------------------------------------------------------------------"
 fi
