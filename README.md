@@ -8,5 +8,5 @@
 
 ## To do
 - Let's Encrypt 
-- DHParam
+- Dhparam
 

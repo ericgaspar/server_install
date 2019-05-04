@@ -1,12 +1,22 @@
 #!/bin/bash
 
+####################################################################################
+#	LEMP server for Raspberry Pi                                               #
+#	This script will install Nginx, PHP, MySQL, PHPMyAdmin                     #
+#	4/5/2019                                                                   #
+####################################################################################
+
 if [ "$(whoami)" != "root" ]; then
 	echo "Run script as ROOT ! (sudo bash install.sh)"
 	exit
 fi
 
-# Ask for personnal Domain name
-read -p "What is your Domain-Name ? : " DOMAIN
+# Define user Domain Name
+echo "------------------------------------------------------------------------------"
+echo " NGinx + PHP7-FPM + MySQL installation"
+echo "------------------------------------------------------------------------------"
+read -p " Enter your Domain Name: " DOMAIN
+echo "------------------------------------------------------------------------------"
 echo
 
 # Solve Perl language issue
@@ -24,7 +34,10 @@ apt-get install -y rpi-update
 
 apt-get install -y git vim acl
 
+# NGinx
 apt-get install -y nginx
+
+# PHP
 apt-get install -y php7.0 php7.0-fpm php7.0-cli php7.0-opcache php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 
 update-rc.d nginx defaults
@@ -128,7 +141,7 @@ apt-get -y install mysql-server mysql-client
 read -s -p "Type the password for MySQL: " mysqlPass
 echo
 
-mysql --user=root --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
+mysql --user=root --password="$mysqlPass" --database="mysql" --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
 #mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
 
 sed -i 's/^bind-address/#bind-address/' /etc/mysql/mariadb.cnf
@@ -142,7 +155,7 @@ if [ "$prompt" = "y" ]; then
 fi
 
 # Fail2ban
-apt-get -y install fail2ban
+apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 
 echo "
@@ -176,32 +189,30 @@ service php7.0-fpm restart
 service mysql restart
 service fail2ban restart
 
-apt-get -y autoremove
-apt-get -y autoclean
+apt-get autoremove -y
+apt-get autoclean -y
 
 # Summary
-echo ""
+echo
 echo "------------------------------------------------------------------------------"
 echo "               NGinx + PHP7-FPM + MySQL installation finished"
 echo "------------------------------------------------------------------------------"
-echo "NGinx configuration folder:       /etc/nginx"
-echo "NGinx default site configuration: /etc/nginx/sites-enabled/default"
-echo "NGinx default HTML root:          /var/www/$DOMAIN"
-echo ""
-echo "Installation script  log file:  $LOG_FILE"
-echo ""
-echo "Notes: If you use IpTables add the following rules"
-echo "iptables -A INPUT -i lo -s localhost -d localhost -j ACCEPT"
-echo "iptables -A OUTPUT -o lo -s localhost -d localhost -j ACCEPT"
-echo "iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
-echo "iptables -A INPUT  -p tcp --dport http -j ACCEPT"
-echo ""
+echo " NGinx configuration folder:       /etc/nginx"
+echo " NGinx default site configuration: /etc/nginx/sites-enabled/default"
+echo " NGinx default HTML root:          /var/www/$DOMAIN"
+echo
+echo " HTML page:                        `hostname -I`"
+echo " To acces phpMyAdmin:              $DOMAIN/phpmyadmin"
+echo " User:                             root"
+echo " Password:                         $mysqlPass"
 echo "------------------------------------------------------------------------------"
-echo ""
+echo
 
-read -p "Do you want to access Raspi-config ? <y/N> " prompt
+read -p "Do you want to start raspi-config? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
 	raspi-config
 else
-	echo "The installation is finished"	
+	echo "------------------------------------------------------------------------------"
+	echo "                         Installation finished"
+	echo "------------------------------------------------------------------------------"
 fi
