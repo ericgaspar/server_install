@@ -39,10 +39,9 @@ dpkg-reconfigure locales
 apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
-
 apt-get install -y rpi-update
 
-apt-get install -y git vim certbot acl
+apt-get install -y git vim letsencrypt acl
 
 # NGinx
 # https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-9#step-5-–-setting-up-server-blocks
@@ -57,15 +56,13 @@ update-rc.d php7.0-fpm defaults
 sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.0/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
 
-ln -s /etc/nginx/sites-available/$DOMAIN.conf /etc/nginx/sites-enabled/
-
-cat > /etc/nginx/sites-enabled/$DOMAIN << "EOF"
+cat > /etc/nginx/sites-available/$DOMAIN << "EOF"
 # Default server
 server {
 	listen 80 default_server;
 	#listen [::]:80 default_server;
 
-	#listen 443 ssl http2 default_server;
+	listen 443 ssl http2 default_server;
 	#listen [::]:443 ssl http2 default_server;
 	
 	server_name www.cuboctaedre.xyz cuboctaedre.xyz;
@@ -128,17 +125,18 @@ server {
 }
 EOF
 
-nginx -t
-systemctl reload nginx
+ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enable/$DOMAIN
 
 mkdir -p /var/www/$DOMAIN
+rm -rf /var/www/html
 cat > /var/www/$DOMAIN/index.php << "EOF"
 <?php
   phpinfo();
 ?>
 EOF
 
-rm -rf /var/www/html
+nginx -t
+systemctl reload nginx
 
 usermod -a -G www-data pi
 chown -R pi:www-data /var/www
@@ -193,7 +191,6 @@ maxretry = 3
 
 # Let's Encrypt
 # https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-debian-9
-
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to run Let's encrypt? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
@@ -202,9 +199,8 @@ if [ "$prompt" = "y" ]; then
 	letsencrypt certonly --webroot -w /var/www/$DOMAIN -d $DOMAIN -d www.$DOMAIN
 fi
 
-sed -i 's/#listen 443 ssl http2 default_server;/listen 443 ssl http2 default_server;/' /etc/nginx/sites-available/$DOMAIN.conf
-sed -i 's/#    ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;/ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;/' /etc/nginx/sites-available/$DOMAIN.conf
-sed -i 's/#    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;/ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;/' /etc/nginx/sites-available/$DOMAIN.conf
+sed -i 's/#    ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;/ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;/' /etc/nginx/sites-available/$DOMAIN
+sed -i 's/#    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;/ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;/' /etc/nginx/sites-available/$DOMAIN
 
 
 # Renew Let's Encrypt script
@@ -212,7 +208,7 @@ sed -i 's/#    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey
 #30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
 
 # Dhparam
-openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
+#openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
 
 service nginx restart
 service php7.0-fpm restart
@@ -238,7 +234,7 @@ echo " Acces to phpMyAdmin:              $DOMAIN/phpmyadmin"
 echo " User:                             root"
 echo " Password:                         $mysqlPass"
 echo "------------------------------------------------------------------------------"
-read -p "Do you want to start raspi-config? <y/N> " prompt
+read -p " Do you want to start raspi-config? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
 	raspi-config
 else
