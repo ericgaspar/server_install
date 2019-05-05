@@ -53,16 +53,14 @@ update-rc.d php7.0-fpm defaults
 sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.0/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
 
-#cp /etc/nginx/sites-available/default /etc/nginx/sites-available/$DOMAIN
-
 cat > /etc/nginx/sites-available/$DOMAIN <<EOF
 # Default server
 server {
 	listen 80 default_server;
 	listen [::]:80 default_server;
 
-	listen 443 ssl http2 default_server;
-	listen [::]:443 ssl http2 default_server;
+	#listen 443 ssl http2 default_server;
+	#listen [::]:443 ssl http2 default_server;
 	
 	server_name www.$DOMAIN $DOMAIN;
 	root /var/www/$DOMAIN;
