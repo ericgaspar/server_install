@@ -46,7 +46,7 @@ apt-get install -y git vim letsencrypt acl
 # NGinx
 # https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-9#step-5-–-setting-up-server-blocks
 apt-get install -y nginx
-apt-get install -y php7.0 php7.0-fpm php7.0-cli php7.0-opcache php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
+apt-get install -y php7.0 php7.0-fpm php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 
 update-rc.d nginx defaults
 update-rc.d php7.0-fpm defaults
