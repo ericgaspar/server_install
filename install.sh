@@ -45,7 +45,8 @@ apt-get install -y git vim letsencrypt acl
 
 # NGinx
 # https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-9#step-5-–-setting-up-server-blocks
-apt-get install -y nginx php-fpm
+apt-get install -y nginx
+apt-get install -y php7.0 php7.0-fpm php7.0-cli php7.0-opcache php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 
 update-rc.d nginx defaults
 update-rc.d php7.0-fpm defaults
@@ -165,25 +166,15 @@ if [ "$prompt" = "y" ]; then
 fi
 
 # Install a firewall
-apt-get install -y ufw
-ufw enable
-ufw allow 'Nginx Full' -y
-ufw delete allow 'Nginx HTTP' -y
+#apt-get install -y ufw
+#ufw enable
+#ufw allow 'Nginx Full' -y
+#ufw delete allow 'Nginx HTTP' -y
 
 # Fail2ban
 apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 
-echo "
-[modsecurity-$DOMAIN]
-enabled  = true
-filter   = modsecurity
-action   = iptables-multiport[name=ModSecurity, port=\"http,https\"]
-           sendmail-buffered[name=ModSecurity, lines=10, dest=webmaster@$DOMAIN]
-logpath  = ~/var/log/$DOMAIN/log/*error.log
-bantime  = 600
-maxretry = 3
-" >> /etc/fail2ban/jail.local
 
 # Let's Encrypt
 # https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-debian-9
