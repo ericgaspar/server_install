@@ -67,7 +67,7 @@ server {
 	listen [::]:80 default_server;
 
 	listen 443 ssl http2 default_server;
-	#listen [::]:443 ssl http2 default_server;
+	listen [::]:443 ssl http2 default_server;
 	
 	server_name www.$DOMAIN $DOMAIN;
 	root /var/www/$DOMAIN;
@@ -77,9 +77,9 @@ server {
                 allow all;
     }
 
-	#location / {
-	#	try_files $uri $uri/ =404;
-	#}
+	location / {
+		try_files $uri $uri/ =404;
+	}
 
 	# Pass the PHP scripts to FastCGI server
 	location ~ \.php$ {
@@ -136,7 +136,7 @@ rm /var/www/$DOMAIN/index.nginx-debian.html
 echo "<?php phpinfo(); ?>" > /var/www/$DOMAIN/index.php
 
 nginx -t
-systemctl reload nginx
+/etc/init.d/nginx restart
 
 usermod -a -G www-data pi
 chown -R pi:www-data /var/www
