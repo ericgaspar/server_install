@@ -3,13 +3,15 @@
 ####################################################################################
 #	LEMP server for Raspberry Pi                                               #
 #	This script will install Nginx, PHP, MySQL, phpMyAdmin                     #
-#	5/5/2019                                                                   #
+#	6/5/2019                                                                   #
 ####################################################################################
 
 if [ "$(whoami)" != "root" ]; then
 	echo "Run script as ROOT ! (sudo bash install.sh)"
 	exit
 fi
+
+#To do: define a new user name and password
 
 # Define user Domain Name
 echo "------------------------------------------------------------------------------"
@@ -49,7 +51,6 @@ apt-get install -y rpi-update
 apt-get install -y git vim letsencrypt acl
 
 # NGinx
-# https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-9#step-5-–-setting-up-server-blocks
 apt-get install -y nginx
 apt-get install -y php7.0 php7.0-fpm php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 
@@ -130,14 +131,9 @@ EOF
 
 ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/$DOMAIN
 
-mkdir -p /var/www/$DOMAIN
-rm -rf /var/www/html
-rm -rf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-cat > /var/www/$DOMAIN/index.php << "EOF"
-<?php
-  phpinfo();
-?>
-EOF
+mv /var/www/html /var/www/$DOMAIN
+rm /var/www/$DOMAIN/index.nginx-debian.html
+echo "<?php phpinfo(); ?>" > /var/www/$DOMAIN/index.php
 
 nginx -t
 systemctl reload nginx
@@ -181,8 +177,7 @@ apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 
 cat > /etc/fail2ban/jail.local <<EOF
-# Fail2Ban configuration file.
-
+# Fail2Ban configuration file
 [DEFAULT]
 ignoreip = 127.0.0.1/8 78.193.28.136
 maxretry = 3
@@ -222,9 +217,7 @@ fail2ban-client reload phpmyadmin
 # Verify your Fail2ban configurations
 fail2ban-client status
 
-
 # Let's Encrypt
-# https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-debian-9
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to run Let's encrypt? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
@@ -235,7 +228,6 @@ fi
 
 #sed -i 's/#    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;/ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;/' /etc/nginx/sites-available/$DOMAIN
 #sed -i 's/#    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;/ssl_certificate /etc/letsencrypt/live/$DOMAIN/privkey.pem;/' /etc/nginx/sites-available/$DOMAIN
-
 
 # Renew Let's Encrypt script
 #crontab -e
