@@ -3,7 +3,7 @@
 ####################################################################################
 #	LEMP server for Raspberry Pi                                               #
 #	This script will install Nginx, PHP, MySQL, phpMyAdmin                     #
-#	4/5/2019                                                                   #
+#	5/5/2019                                                                   #
 ####################################################################################
 
 if [ "$(whoami)" != "root" ]; then
@@ -19,6 +19,11 @@ echo "--------------------------------------------------------------------------
 read -p " Enter your Domain Name: " DOMAIN
 echo "------------------------------------------------------------------------------"
 echo
+echo "------------------------------------------------------------------------------"
+read -p " Enter your Email Adress: " EMAIL
+echo "------------------------------------------------------------------------------"
+echo
+
 # Set time zone
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to change the time zone? <y/N> " prompt
@@ -60,16 +65,16 @@ server {
 	listen 80 default_server;
 	listen [::]:80 default_server;
 
-	#listen 443 ssl http2 default_server;
+	listen 443 ssl http2 default_server;
 	#listen [::]:443 ssl http2 default_server;
 	
 	server_name www.$DOMAIN $DOMAIN;
 	root /var/www/$DOMAIN;
 	index index.php index.html index.htm;
 
-	#location ~ /.well-known {
-    #            allow all;
-    #}
+	location ~ /.well-known {
+                allow all;
+    }
 
 	#location / {
 	#	try_files $uri $uri/ =404;
@@ -135,7 +140,7 @@ cat > /var/www/$DOMAIN/index.php << "EOF"
 EOF
 
 nginx -t
-service nginx reload
+systemctl reload nginx
 
 usermod -a -G www-data pi
 chown -R pi:www-data /var/www
@@ -151,7 +156,7 @@ read -s -p " Type the password for MySQL: " mysqlPass
 echo "------------------------------------------------------------------------------"
 echo
 # Probleme to resolve
-mysql --user=root --password="$mysqlPass" --database="mysql" --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
+mysql --user=root --password="$mysqlPass" --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
 sed -i 's/^bind-address/#bind-address/' /etc/mysql/mariadb.cnf
 sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mariadb.cnf
 
@@ -174,6 +179,48 @@ fi
 # Fail2ban
 apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+
+cat > /etc/fail2ban/jail.local <<EOF
+# Fail2Ban configuration file.
+
+[DEFAULT]
+ignoreip = 127.0.0.1/8 78.193.28.136
+maxretry = 3
+bantime = 1200
+findtime = 120
+destemail = $EMAIL
+sender = root@$DOMAIN
+
+[sshd]
+enabled = true
+port    = ssh
+filter   = sshd
+logpath = %(sshd_log)s
+backend = %(sshd_backend)s
+
+[sshd-ddos]
+enabled = true
+
+[recidive]
+enabled = true
+
+[phpmyadmin]
+
+enabled = true
+port = http,https
+filter = phpmyadmin
+action = iptables-multiport[name=PHPMYADMIN, port="http,https", protocol=tcp]
+logpath = /var/log/nginx/access.log
+bantime = 3600
+findtime = 60
+maxretry = 3
+EOF
+
+service fail2ban restart
+fail2ban-client reload phpmyadmin
+
+# Verify your Fail2ban configurations
+fail2ban-client status
 
 
 # Let's Encrypt
