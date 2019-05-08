@@ -3,7 +3,7 @@
 ####################################################################################
 #	LEMP server for Raspberry Pi                                               #
 #	This script will install Nginx, PHP, MySQL, phpMyAdmin                     #
-#	6/5/2019                                                                   #
+#	8/5/2019                                                                   #
 ####################################################################################
 
 if [ "$(whoami)" != "root" ]; then
@@ -187,44 +187,6 @@ fi
 # Fail2ban
 apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-
-cat > /etc/fail2ban/jail.local <<EOF
-# Fail2Ban configuration file
-[DEFAULT]
-ignoreip = 127.0.0.1/8 78.193.28.136
-maxretry = 3
-bantime = 1200
-findtime = 120
-destemail = $EMAIL
-sender = root@$DOMAIN
-
-[sshd]
-enabled = true
-port    = ssh
-filter   = sshd
-logpath = %(sshd_log)s
-backend = %(sshd_backend)s
-
-[sshd-ddos]
-enabled = true
-
-[recidive]
-enabled = true
-
-[phpmyadmin]
-
-enabled = true
-port = http,https
-filter = phpmyadmin
-action = iptables-multiport[name=PHPMYADMIN, port="http,https", protocol=tcp]
-logpath = /var/log/nginx/access.log
-bantime = 3600
-findtime = 60
-maxretry = 3
-EOF
-
-service fail2ban restart
-fail2ban-client reload phpmyadmin
 
 # Verify your Fail2ban configurations
 fail2ban-client status
