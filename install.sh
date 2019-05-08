@@ -51,7 +51,7 @@ apt-get install -y rpi-update
 apt-get install -y git vim letsencrypt acl
 
 # NGinx
-apt-get install -y nginx
+apt-get install -y nginx-full certbot
 apt-get install -y php7.0 php7.0-fpm php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 
 update-rc.d nginx defaults
@@ -59,6 +59,15 @@ update-rc.d php7.0-fpm defaults
 
 sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.0/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
+
+# Let's Encrypt
+echo "------------------------------------------------------------------------------"
+read -p " Do you want to run Let's encrypt? <y/N> " prompt
+echo "------------------------------------------------------------------------------"
+echo
+if [ "$prompt" = "y" ]; then
+	certbot certonly --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
+fi
 
 cat > /etc/nginx/sites-available/$DOMAIN <<EOF
 # Default server
@@ -73,9 +82,9 @@ server {
 	root /var/www/$DOMAIN;
 	index index.php index.html index.htm;
 
-	location ~ /.well-known {
-                allow all;
-    }
+	#location ~ /.well-known {
+    #            allow all;
+    #}
 
 	location / {
 		try_files $uri $uri/ =404;
@@ -108,15 +117,19 @@ server {
         ssl_session_timeout 5m;
 
     # ssl
-    #    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
-    #    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
+    	ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    	ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
 
     # Disable SSLv3
        ssl_protocols TLSv1.1 TLSv1.2;
 
 	# Enable server-side protection against BEAST attacks
-       ssl_prefer_server_ciphers on;
-       ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+    	ssl_prefer_server_ciphers on;
+  		ssl_session_tickets off;
+    	ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+  		ssl_stapling on;
+  		ssl_stapling_verify on;
+  		ssl_trusted_certificate /etc/letsencrypt/live/$DOMAIN/chain.pem; 
 
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
@@ -216,18 +229,6 @@ fail2ban-client reload phpmyadmin
 
 # Verify your Fail2ban configurations
 fail2ban-client status
-
-# Let's Encrypt
-echo "------------------------------------------------------------------------------"
-read -p " Do you want to run Let's encrypt? <y/N> " prompt
-echo "------------------------------------------------------------------------------"
-echo
-if [ "$prompt" = "y" ]; then
-	letsencrypt certonly --webroot -w /var/www/$DOMAIN -d $DOMAIN -d www.$DOMAIN
-fi
-
-#sed -i 's/#    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;/ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;/' /etc/nginx/sites-available/$DOMAIN
-#sed -i 's/#    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;/ssl_certificate /etc/letsencrypt/live/$DOMAIN/privkey.pem;/' /etc/nginx/sites-available/$DOMAIN
 
 # Renew Let's Encrypt script
 #crontab -e
