@@ -47,6 +47,8 @@ apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
 apt-get install -y rpi-update
+
+# Update Raspberry Pi kernel
 raspi-update
 
 apt-get install -y git vim letsencrypt acl
