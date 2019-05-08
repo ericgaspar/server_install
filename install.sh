@@ -38,7 +38,7 @@ fi
 apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
-apt-get install -y rpi-update
+rpi-update
 
 # Change the default password
 passwd
@@ -61,13 +61,14 @@ read -p " Do you want to run Let's encrypt? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
 echo
 if [ "$prompt" = "y" ]; then
-	certbot certonly --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
+	certbot certonly --authenticator standalone --preferred-challenges tls-sni --agree-tos --no-eff-email -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
 fi
 
 cat > /etc/nginx/sites-available/$DOMAIN <<EOF
 # Default server
 server {
 	listen 80;
+	listen [::]:80;
 	server_name $DOMAIN www.$DOMAIN;
 	return 301 https://$server_name$request_uri;
 }
@@ -113,6 +114,7 @@ server {
     # ssl
     	ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
     	ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
+    	ssl_trusted_certificate /etc/letsencrypt/live/$DOMAIN/chain.pem; 
 
     # Disable SSLv3
        ssl_protocols TLSv1.1 TLSv1.2;
@@ -123,8 +125,7 @@ server {
     	ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
   		ssl_stapling on;
   		ssl_stapling_verify on;
-  		ssl_trusted_certificate /etc/letsencrypt/live/$DOMAIN/chain.pem; 
-
+  		
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
     #   ssl_dhparam /etc/ssl/certs/dhparam.pem;
