@@ -72,9 +72,12 @@ fi
 cat > /etc/nginx/sites-available/$DOMAIN <<EOF
 # Default server
 server {
-	listen 80 default_server;
-	listen [::]:80 default_server;
+	listen 80;
+	server_name $DOMAIN www.$DOMAIN;
+	return 301 https://$server_name$request_uri;
+}
 
+server {
 	listen 443 ssl http2 default_server;
 	listen [::]:443 ssl http2 default_server;
 	
@@ -82,12 +85,8 @@ server {
 	root /var/www/$DOMAIN;
 	index index.php index.html index.htm;
 
-	#location ~ /.well-known {
-    #            allow all;
-    #}
-
 	location / {
-		try_files $uri $uri/ =404;
+		try_files $uri $uri/ /index.php$is_args$args;
 	}
 
 	# Pass the PHP scripts to FastCGI server
