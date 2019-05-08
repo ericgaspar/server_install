@@ -6,7 +6,13 @@
 
 `sudo bash install.sh`
 
+### Testing
+
+`wget https://raw.githubusercontent.com/ericgaspar/server_install/testing/install.sh`
+
+`sudo bash install.sh`
+
 ## To do
-- Let's Encrypt 
+
 - Dhparam
 

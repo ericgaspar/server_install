@@ -3,13 +3,15 @@
 ####################################################################################
 #	LEMP server for Raspberry Pi                                               #
 #	This script will install Nginx, PHP, MySQL, phpMyAdmin                     #
-#	4/5/2019                                                                   #
+#	6/5/2019                                                                   #
 ####################################################################################
 
 if [ "$(whoami)" != "root" ]; then
 	echo "Run script as ROOT ! (sudo bash install.sh)"
 	exit
 fi
+
+#To do: define a new user name and password
 
 # Define user Domain Name
 echo "------------------------------------------------------------------------------"
@@ -19,6 +21,11 @@ echo "--------------------------------------------------------------------------
 read -p " Enter your Domain Name: " DOMAIN
 echo "------------------------------------------------------------------------------"
 echo
+echo "------------------------------------------------------------------------------"
+read -p " Enter your Email Adress: " EMAIL
+echo "------------------------------------------------------------------------------"
+echo
+
 # Set time zone
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to change the time zone? <y/N> " prompt
@@ -39,17 +46,13 @@ dpkg-reconfigure locales
 apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
-
 apt-get install -y rpi-update
 
 apt-get install -y git vim letsencrypt acl
 
 # NGinx
-# https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-9#step-5-–-setting-up-server-blocks
-apt-get install -y nginx
-
-# PHP
-apt-get install -y php7.0 php7.0-fpm php7.0-cli php7.0-opcache php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
+apt-get install -y nginx-full certbot
+apt-get install -y php7.0 php7.0-fpm php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 
 update-rc.d nginx defaults
 update-rc.d php7.0-fpm defaults
@@ -57,27 +60,33 @@ update-rc.d php7.0-fpm defaults
 sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.0/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
 
-ln -s /etc/nginx/sites-available/cuboctaedre.xyz /etc/nginx/sites-enabled/
+# Let's Encrypt
+echo "------------------------------------------------------------------------------"
+read -p " Do you want to run Let's encrypt? <y/N> " prompt
+echo "------------------------------------------------------------------------------"
+echo
+if [ "$prompt" = "y" ]; then
+	certbot certonly --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
+fi
 
-cat > /etc/nginx/sites-enabled/default << "EOF"
+cat > /etc/nginx/sites-available/$DOMAIN <<EOF
 # Default server
 server {
-	listen 80 default_server;
-	listen [::]:80 default_server;
+	listen 80;
+	server_name $DOMAIN www.$DOMAIN;
+	return 301 https://$server_name$request_uri;
+}
 
-	#listen 443 ssl http2 default_server;
-	#listen [::]:443 ssl http2 default_server;
+server {
+	listen 443 ssl http2 default_server;
+	listen [::]:443 ssl http2 default_server;
 	
-	server_name www.cuboctaedre.xyz cuboctaedre.xyz;
-	root /var/www/cuboctaedre.xyz;
-	index index.php index.html index.htm default.html;
-
-	location ~ /.well-known {
-                allow all;
-    }
+	server_name www.$DOMAIN $DOMAIN;
+	root /var/www/$DOMAIN;
+	index index.php index.html index.htm;
 
 	location / {
-		try_files $uri $uri/ =404;
+		try_files $uri $uri/ /index.php$is_args$args;
 	}
 
 	# Pass the PHP scripts to FastCGI server
@@ -103,65 +112,43 @@ server {
     	gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
 	# Improve HTTPS performance with session resumption
-    #    ssl_session_cache shared:SSL:10m;
-    #    ssl_session_timeout 5m;
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_timeout 5m;
 
     # ssl
-    #    ssl_certificate /etc/letsencrypt/live/cuboctaedre.xyz/fullchain.pem;
-    #    ssl_certificate_key /etc/letsencrypt/live/cuboctaedre.xyz/privkey.pem;
+    	ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    	ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
 
     # Disable SSLv3
-    #   ssl_protocols TLSv1.1 TLSv1.2;
+       ssl_protocols TLSv1.1 TLSv1.2;
 
 	# Enable server-side protection against BEAST attacks
-    #   ssl_prefer_server_ciphers on;
-    #   ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+    	ssl_prefer_server_ciphers on;
+  		ssl_session_tickets off;
+    	ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+  		ssl_stapling on;
+  		ssl_stapling_verify on;
+  		ssl_trusted_certificate /etc/letsencrypt/live/$DOMAIN/chain.pem; 
 
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
     #   ssl_dhparam /etc/ssl/certs/dhparam.pem;
 
 	# deny access to .htaccess files, should an Apache document root conflict with nginx
-	location ~ /\.ht {
-		deny all;
-	}
+	#location ~ /\.ht {
+	#	deny all;
+	#}
 }
 EOF
 
+ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/$DOMAIN
 
-#a faire
-#sid -i completé le script ....
-#decommenté cette ligne
-#...
-#http {
-#    ...
-#    server_names_hash_bucket_size 64;
-#    ...
-#}
-#...
-
-#nano /etc/nginx/nginx.conf
-#
-
-#https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-debian-9#step-5-–-setting-up-server-blocks
+mv /var/www/html /var/www/$DOMAIN
+rm /var/www/$DOMAIN/index.nginx-debian.html
+echo "<?php phpinfo(); ?>" > /var/www/$DOMAIN/index.php
 
 nginx -t
-systemctl restart nginx
-
-mkdir -p /var/www/$DOMAIN
-cat > /var/www/$DOMAIN/index.php << "EOF"
-<?php
-class Application
-{
-	public function __construct()
-	{
-		phpinfo();
-	}
-}
-$application = new Application();
-EOF
-
-rm -rf /var/www/html
+/etc/init.d/nginx restart
 
 usermod -a -G www-data pi
 chown -R pi:www-data /var/www
@@ -170,16 +157,14 @@ chmod -R g+rw /var/www
 setfacl -d -R -m g::rw /var/www
 
 # MySQL
-apt-get -y install mysql-server mysql-client
+apt-get -y install mysql-server
 
 echo "------------------------------------------------------------------------------"
 read -s -p " Type the password for MySQL: " mysqlPass
 echo "------------------------------------------------------------------------------"
 echo
 # Probleme to resolve
-mysql --user=root --password="$mysqlPass" --database="mysql" --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
-#mysql --user="root" --password="$mysqlPass" --database="mysql" --execute="GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '$mysqlPass'; FLUSH PRIVILEGES;"
-
+mysql --user=root --password="$mysqlPass" --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
 sed -i 's/^bind-address/#bind-address/' /etc/mysql/mariadb.cnf
 sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mariadb.cnf
 
@@ -194,44 +179,62 @@ if [ "$prompt" = "y" ]; then
 fi
 
 # Install a firewall
-apt-get install -y ufw
-ufw enable
-ufw allow 'Nginx Full'
-ufw delete allow 'Nginx HTTP'
+#apt-get install -y ufw
+#ufw enable
+#ufw allow 'Nginx Full' -y
+#ufw delete allow 'Nginx HTTP' -y
 
 # Fail2ban
 apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 
-echo "
-[modsecurity-$DOMAIN]
-enabled  = true
-filter   = modsecurity
-action   = iptables-multiport[name=ModSecurity, port=\"http,https\"]
-           sendmail-buffered[name=ModSecurity, lines=10, dest=webmaster@$DOMAIN]
-logpath  = ~/var/log/$DOMAIN/log/*error.log
-bantime  = 600
+cat > /etc/fail2ban/jail.local <<EOF
+# Fail2Ban configuration file
+[DEFAULT]
+ignoreip = 127.0.0.1/8 78.193.28.136
 maxretry = 3
-" >> /etc/fail2ban/jail.local
+bantime = 1200
+findtime = 120
+destemail = $EMAIL
+sender = root@$DOMAIN
 
-# Let's Encrypt
-#https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-debian-9
+[sshd]
+enabled = true
+port    = ssh
+filter   = sshd
+logpath = %(sshd_log)s
+backend = %(sshd_backend)s
 
-echo "------------------------------------------------------------------------------"
-read -p " Do you want to run Let's encrypt? <y/N> " prompt
-echo "------------------------------------------------------------------------------"
-echo
-if [ "$prompt" = "y" ]; then
-	letsencrypt certonly --webroot -w /var/www/$DOMAIN -d $DOMAIN -d www.$DOMAIN
-fi
+[sshd-ddos]
+enabled = true
 
+[recidive]
+enabled = true
+
+[phpmyadmin]
+
+enabled = true
+port = http,https
+filter = phpmyadmin
+action = iptables-multiport[name=PHPMYADMIN, port="http,https", protocol=tcp]
+logpath = /var/log/nginx/access.log
+bantime = 3600
+findtime = 60
+maxretry = 3
+EOF
+
+service fail2ban restart
+fail2ban-client reload phpmyadmin
+
+# Verify your Fail2ban configurations
+fail2ban-client status
 
 # Renew Let's Encrypt script
 #crontab -e
 #30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
 
 # Dhparam
-openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
+#openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
 
 service nginx restart
 service php7.0-fpm restart
@@ -257,7 +260,7 @@ echo " Acces to phpMyAdmin:              $DOMAIN/phpmyadmin"
 echo " User:                             root"
 echo " Password:                         $mysqlPass"
 echo "------------------------------------------------------------------------------"
-read -p "Do you want to start raspi-config? <y/N> " prompt
+read -p " Do you want to start raspi-config? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
 	raspi-config
 else
