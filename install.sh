@@ -20,8 +20,6 @@ echo " This script will install a LEMP server on a Raspberry Pi"
 echo "------------------------------------------------------------------------------"
 read -p " Enter your Domain Name: " DOMAIN
 echo "------------------------------------------------------------------------------"
-echo
-echo "------------------------------------------------------------------------------"
 read -p " Enter your Email Adress: " EMAIL
 echo "------------------------------------------------------------------------------"
 echo
@@ -47,9 +45,6 @@ apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
 apt-get install -y rpi-update
-
-# Update Raspberry Pi kernel
-raspi-update
 
 apt-get install -y git vim letsencrypt acl
 
