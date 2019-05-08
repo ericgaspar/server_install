@@ -11,8 +11,6 @@ if [ "$(whoami)" != "root" ]; then
 	exit
 fi
 
-#To do: define a new user name and password
-
 # Define user Domain Name
 echo "------------------------------------------------------------------------------"
 echo " NGinx + PHP7-FPM + MySQL installation"
@@ -21,10 +19,6 @@ echo "--------------------------------------------------------------------------
 read -p " Enter your Domain Name: " DOMAIN
 echo "------------------------------------------------------------------------------"
 read -p " Enter your Email Adress: " EMAIL
-echo "------------------------------------------------------------------------------"
-echo
-
-# Set time zone
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to change the time zone? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
@@ -45,6 +39,8 @@ apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
 apt-get install -y rpi-update
+
+passwd
 
 apt-get install -y git vim letsencrypt acl
 
@@ -76,8 +72,8 @@ server {
 }
 
 server {
-	listen 443 ssl http2 default_server;
-	listen [::]:443 ssl http2 default_server;
+	listen 443 ssl default_server;
+	listen [::]:443 ssl default_server;
 	
 	server_name www.$DOMAIN $DOMAIN;
 	root /var/www/$DOMAIN;
