@@ -11,6 +11,13 @@ if [ "$(whoami)" != "root" ]; then
 	exit
 fi
 
+# Solve Perl language issue
+export LANGUAGE=fr_FR.UTF-8
+export LANG=fr_FR.UTF-8
+export LC_ALL=fr_FR.UTF-8
+locale-gen fr_FR.UTF-8
+dpkg-reconfigure locales
+
 # Define user Domain Name
 echo "------------------------------------------------------------------------------"
 echo " NGinx + PHP7-FPM + MySQL installation"
@@ -27,19 +34,13 @@ if [ "$prompt" = "y" ]; then
 	dpkg-reconfigure tzdata
 fi
 
-# Solve Perl language issue
-export LANGUAGE=fr_FR.UTF-8
-export LANG=fr_FR.UTF-8
-export LC_ALL=fr_FR.UTF-8
-locale-gen fr_FR.UTF-8
-dpkg-reconfigure locales
-
 # Update Raspberry Pi
 apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
 apt-get install -y rpi-update
 
+# Change the default password
 passwd
 
 apt-get install -y git vim letsencrypt acl
@@ -175,15 +176,10 @@ fi
 # Install a firewall
 #apt-get install -y ufw
 #ufw enable
-#ufw allow 'Nginx Full' -y
-#ufw delete allow 'Nginx HTTP' -y
 
 # Fail2ban
 apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-
-# Verify your Fail2ban configurations
-fail2ban-client status
 
 # Renew Let's Encrypt script
 #crontab -e
