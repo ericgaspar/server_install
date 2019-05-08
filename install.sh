@@ -158,7 +158,7 @@ chmod -R g+rw /var/www
 setfacl -d -R -m g::rw /var/www
 
 # MySQL
-apt-get -y install mysql-server
+apt-get -y install mysql-server mysql-client --fix-missing
 
 echo "------------------------------------------------------------------------------"
 read -s -p " Type the password for MySQL: " mysqlPass
@@ -227,7 +227,5 @@ read -p " Do you want to start raspi-config? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
 	raspi-config
 else
-	echo "------------------------------------------------------------------------------"
-	echo "                         Installation finished"
-	echo "------------------------------------------------------------------------------"
+	reboot
 fi
