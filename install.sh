@@ -3,9 +3,10 @@
 ####################################################################################
 #	LEMP server for Raspberry Pi                                               #
 #	This script will install Nginx, PHP, MySQL, phpMyAdmin                     #
-#	8/5/2019                                                                   #
+#	9/5/2019                                                                   #
 ####################################################################################
 
+# Verify that the script id run as ROOT
 if [ "$(whoami)" != "root" ]; then
 	echo "Run script as ROOT ! (sudo bash install.sh)"
 	exit
@@ -18,7 +19,7 @@ export LC_ALL=fr_FR.UTF-8
 locale-gen fr_FR.UTF-8
 dpkg-reconfigure locales
 
-# Define user Domain Name
+# Define user Domain Name, email, time-zone
 echo "------------------------------------------------------------------------------"
 echo " NGinx + PHP7-FPM + MySQL installation"
 echo " This script will install a LEMP server on a Raspberry Pi"
@@ -38,6 +39,8 @@ fi
 apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
+
+# Update Raspberry Pi kernel
 rpi-update
 
 # Change the default password
@@ -76,7 +79,7 @@ server {
 server {
 	listen 443 ssl default_server;
 	listen [::]:443 ssl default_server;
-	
+
 	server_name www.$DOMAIN $DOMAIN;
 	root /var/www/$DOMAIN;
 	index index.php index.html index.htm;
@@ -114,7 +117,7 @@ server {
     # ssl
     	ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
     	ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
-    	ssl_trusted_certificate /etc/letsencrypt/live/$DOMAIN/chain.pem; 
+    	ssl_trusted_certificate /etc/letsencrypt/live/$DOMAIN/chain.pem;
 
     # Disable SSLv3
        ssl_protocols TLSv1.1 TLSv1.2;
@@ -125,7 +128,7 @@ server {
     	ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
   		ssl_stapling on;
   		ssl_stapling_verify on;
-  		
+
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
     #   ssl_dhparam /etc/ssl/certs/dhparam.pem;
@@ -138,14 +141,13 @@ server {
 EOF
 
 ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/$DOMAIN
-
 mv /var/www/html /var/www/$DOMAIN
 rm /var/www/$DOMAIN/index.nginx-debian.html
 echo "<?php phpinfo(); ?>" > /var/www/$DOMAIN/index.php
-
 nginx -t
 /etc/init.d/nginx restart
 
+# Set right access
 usermod -a -G www-data pi
 chown -R pi:www-data /var/www
 chgrp -R www-data /var/www
@@ -154,7 +156,6 @@ setfacl -d -R -m g::rw /var/www
 
 # MySQL
 apt-get -y install mysql-server mysql-client --fix-missing
-
 echo "------------------------------------------------------------------------------"
 read -s -p " Type the password for MySQL: " mysqlPass
 echo "------------------------------------------------------------------------------"
@@ -174,7 +175,7 @@ if [ "$prompt" = "y" ]; then
 	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
 fi
 
-# Install a firewall
+# Install a firewall (may not be necessary)
 #apt-get install -y ufw
 #ufw enable
 
@@ -182,18 +183,17 @@ fi
 apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 
-# Renew Let's Encrypt script
+# Renew Let's Encrypt script (to be scripted)
 #crontab -e
 #30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
 
-# Dhparam
+# Dhparam (take looong time on Raspberry pi)
 #openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
 
 service nginx restart
 service php7.0-fpm restart
 service mysql restart
 service fail2ban restart
-
 apt-get autoremove -y
 apt-get autoclean -y
 
