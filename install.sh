@@ -46,6 +46,7 @@ rpi-update
 # Change the default password
 passwd
 
+# letsencypt may not be needed
 apt-get install -y git vim letsencrypt acl
 
 # NGinx
@@ -67,7 +68,7 @@ if [ "$prompt" = "y" ]; then
 	certbot certonly --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
 fi
 
-cat > /etc/nginx/sites-available/$DOMAIN <<EOF
+cat > /etc/nginx/sites-available/$DOMAIN.conf <<EOF
 # Default server
 server {
 	listen 80;
@@ -140,7 +141,7 @@ server {
 }
 EOF
 
-ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/$DOMAIN
+ln -s /etc/nginx/sites-available/$DOMAIN.conf /etc/nginx/sites-enabled/
 mv /var/www/html /var/www/$DOMAIN
 rm /var/www/$DOMAIN/index.nginx-debian.html
 echo "<?php phpinfo(); ?>" > /var/www/$DOMAIN/index.php
