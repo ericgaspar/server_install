@@ -176,27 +176,25 @@ if [ "$prompt" = "y" ]; then
 fi
 
 # Wifi setup
-# echo "------------------------------------------------------------------------------"
-# read -p " Do you want to set-up wifi? <y/N> " prompt
-# echo "------------------------------------------------------------------------------"
-# echo
-# if [ "$prompt" = "y" ]; then
-# echo "------------------------------------------------------------------------------"
-# read -p " Enter your SSID: " SSID
-# echo "------------------------------------------------------------------------------"
-# read -p " Enter your wifi key: " WIFIPASSWORD
-# echo "------------------------------------------------------------------------------"
-# cat > /etc/wpa_supplicant/wpa_supplicant.conf <<EOF
-# country=FR
-# ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-# update_config=1
-# network={
-#     ssid="$SSID"
-#     psk="$WIFIPASSWORD"
-#     key_mgmt=WPA2-PSK/AES
-#     }
-# EOF
-# fi
+echo "------------------------------------------------------------------------------"
+read -p " Do you want to set-up wifi? <y/N> " prompt
+if [ "$prompt" = "y" ]; then
+echo "------------------------------------------------------------------------------"
+read -p " Enter your SSID: " SSID
+echo "------------------------------------------------------------------------------"
+read -p " Enter your wifi key: " WIFIPASSWORD
+echo "------------------------------------------------------------------------------"
+cat > /etc/wpa_supplicant/wpa_supplicant.conf <<EOF
+country=FR
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+network={
+	ssid="$SSID"
+	psk="$WIFIPASSWORD"
+	key_mgmt=WPA-PSK
+}
+EOF
+fi
 
 # Install a firewall (may not be necessary)
 #apt-get install -y ufw
