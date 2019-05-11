@@ -3,12 +3,12 @@
 ####################################################################################
 #	LEMP server for Raspberry Pi                                               #
 #	This script will install Nginx, PHP, MySQL, phpMyAdmin                     #
-#	9/5/2019                                                                   #
+#	11/5/2019                                                                  #
 ####################################################################################
 
 # Verify that the script id run as ROOT
 if [ "$(whoami)" != "root" ]; then
-	echo "Run script as ROOT ! (sudo bash install.sh)"
+	echo "Run script as ROOT! (sudo bash install.sh)"
 	exit
 fi
 
@@ -43,14 +43,14 @@ apt-get dist-upgrade -y
 # Update Raspberry Pi kernel
 rpi-update
 
-# Change the default password
+# Change the default password /!\
 passwd
 
 # letsencypt may not be needed
-apt-get install -y git vim letsencrypt acl
+apt-get install -y git vim acl
 
-# NGinx
-apt-get install -y nginx-full certbot
+# NGinx php
+apt-get install -y nginx-full
 apt-get install -y php7.0 php7.0-fpm php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 
 update-rc.d nginx defaults
@@ -65,11 +65,12 @@ read -p " Do you want to run Let's encrypt? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
 echo
 if [ "$prompt" = "y" ]; then
+	apt-get install -y certbot
 	certbot certonly --email $EMAIL --agree-tos --force-renewal --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
 fi
 
 cat > /etc/nginx/sites-available/$DOMAIN.conf <<EOF
-# Default server
+# $DOMAIN server
 server {
 	listen 80;
 	listen [::]:80;
