@@ -79,7 +79,7 @@ server {
 	listen			80;
 	listen			[::]:80;
 	server_name		$DOMAIN www.$DOMAIN;
-	return			301 https://$DOMAIN$request_uri;
+	return			301 https://%{server_name}%{request_uri};
 }
 
 server {
