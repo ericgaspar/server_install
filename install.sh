@@ -65,7 +65,7 @@ read -p " Do you want to run Let's encrypt? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
 echo
 if [ "$prompt" = "y" ]; then
-	certbot certonly --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
+	certbot certonly --email $EMAIL --agree-tos --force-renewal --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
 fi
 
 cat > /etc/nginx/sites-available/$DOMAIN.conf <<EOF
