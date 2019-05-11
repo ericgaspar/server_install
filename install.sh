@@ -73,7 +73,7 @@ fi
 #
 #
 
-cat > /etc/nginx/sites-available/$DOMAIN.conf <<EOF
+cat > /etc/nginx/sites-available/$DOMAIN <<EOF
 # $DOMAIN server
 server {
 	listen			80;
@@ -83,8 +83,8 @@ server {
 }
 
 server {
-	listen			443 ssl html2;
-	listen			[::]:443 ssl html2;
+	listen			443 ssl;
+	listen			[::]:443 ssl;
 	server_name		www.$DOMAIN $DOMAIN;
 	root			/var/www/$DOMAIN;
 	index			index.php index.html index.htm;
@@ -145,7 +145,7 @@ server {
 }
 EOF
 
-ln -s /etc/nginx/sites-available/$DOMAIN.conf /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
 mv /var/www/html /var/www/$DOMAIN
 rm /var/www/$DOMAIN/index.nginx-debian.html
 echo "<?php phpinfo(); ?>" > /var/www/$DOMAIN/index.php
