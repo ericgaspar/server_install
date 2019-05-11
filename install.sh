@@ -46,10 +46,10 @@ rpi-update
 # Change the default password /!\
 passwd
 
-# letsencypt may not be needed
+# Install complementary apps
 apt-get install -y git vim acl
 
-# NGinx php
+# NGinx PHP
 apt-get install -y nginx-full
 apt-get install -y php7.0 php7.0-fpm php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 
@@ -69,22 +69,25 @@ if [ "$prompt" = "y" ]; then
 	certbot certonly --email $EMAIL --agree-tos --force-renewal --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
 fi
 
+# Renew Let's Encrypt certificat
+#
+#
+
 cat > /etc/nginx/sites-available/$DOMAIN.conf <<EOF
 # $DOMAIN server
 server {
-	listen 80;
-	listen [::]:80;
-	server_name $DOMAIN www.$DOMAIN;
-	return 301 https://$server_name$request_uri;
+	listen			80;
+	listen			[::]:80;
+	server_name		$DOMAIN www.$DOMAIN;
+	return			301 https://$DOMAIN$request_uri;
 }
 
 server {
-	listen 443 ssl default_server;
-	listen [::]:443 ssl default_server;
-
-	server_name www.$DOMAIN $DOMAIN;
-	root /var/www/$DOMAIN;
-	index index.php index.html index.htm;
+	listen			443 ssl html2;
+	listen			[::]:443 ssl html2;
+	server_name		www.$DOMAIN $DOMAIN;
+	root			/var/www/$DOMAIN;
+	index			index.php index.html index.htm;
 
 	location / {
 		try_files $uri $uri/ /index.php$is_args$args;
