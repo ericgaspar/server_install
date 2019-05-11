@@ -73,7 +73,7 @@ fi
 #
 #
 
-cat > /etc/nginx/sites-available/$DOMAIN <<EOF
+cat > /etc/nginx/sites-available/$DOMAIN.conf <<EOF
 # $DOMAIN server
 server {
 	listen			80;
@@ -83,8 +83,8 @@ server {
 }
 
 server {
-	listen			443 ssl;
-	listen			[::]:443 ssl;
+	listen			443 ssl http2;
+	listen			[::]:443 ssl https2;
 	server_name		www.$DOMAIN $DOMAIN;
 	root			/var/www/$DOMAIN;
 	index			index.php index.html index.htm;
@@ -117,7 +117,7 @@ server {
 
 	# Improve HTTPS performance with session resumption
         ssl_session_cache shared:SSL:10m;
-        ssl_session_timeout 5m;
+        ssl_session_timeout 10m;
 
     # ssl
     	ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
@@ -145,12 +145,15 @@ server {
 }
 EOF
 
-ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
+rm /etc/nginx/sites-enabled/default
+ln -s /etc/nginx/sites-available/$DOMAIN.conf /etc/nginx/sites-enabled/$DOMAIN.conf
 mv /var/www/html /var/www/$DOMAIN
 rm /var/www/$DOMAIN/index.nginx-debian.html
 echo "<?php phpinfo(); ?>" > /var/www/$DOMAIN/index.php
 nginx -t
-/etc/init.d/nginx restart
+systemctl stop nginx
+systemctl start nginx
+systemctl status nginx
 
 # Set right access
 usermod -a -G www-data pi
