@@ -68,12 +68,8 @@ if [ "$prompt" = "y" ]; then
 	certbot certonly --email $EMAIL --agree-tos --force-renewal --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
 fi
 
-# Renew Let's Encrypt certificat
-#
-#
-
 cat > /etc/nginx/sites-available/$DOMAIN.conf <<EOF
-# $DOMAIN server
+# $DOMAIN server configuration
 server {
 	listen			80;
 	listen			[::]:80;
@@ -83,7 +79,7 @@ server {
 
 server {
 	listen			443 ssl http2;
-	listen			[::]:443 ssl https2;
+	listen			[::]:443 ssl http2;
 	server_name		www.$DOMAIN $DOMAIN;
 	root			/var/www/$DOMAIN;
 	index			index.php index.html index.htm;
@@ -124,7 +120,7 @@ server {
     	ssl_trusted_certificate /etc/letsencrypt/live/$DOMAIN/chain.pem;
 
     # Disable SSLv3
-       ssl_protocols TLSv1.1 TLSv1.2;
+       ssl_protocols TLSv1.2;
 
 	# Enable server-side protection against BEAST attacks
     	ssl_prefer_server_ciphers on;
@@ -135,7 +131,7 @@ server {
 
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
-    #   ssl_dhparam /etc/ssl/certs/dhparam.pem;
+        ssl_dhparam /etc/ssl/certs/dhparam.pem;
 
 	# deny access to .htaccess files, should an Apache document root conflict with nginx
 	#location ~ /\.ht {
@@ -150,7 +146,6 @@ mv /var/www/html /var/www/$DOMAIN
 rm /var/www/$DOMAIN/index.nginx-debian.html
 echo "<?php phpinfo(); ?>" > /var/www/$DOMAIN/index.php
 nginx -t
-systemctl stop nginx
 systemctl start nginx
 systemctl status nginx
 
@@ -201,13 +196,13 @@ network={
 EOF
 fi
 
-# Install a firewall (may not be necessary)
-#apt-get install -y ufw
-#ufw enable
-
 # Fail2ban
 apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+
+# Install a firewall (may not be necessary)
+#apt-get install -y ufw
+#ufw enable
 
 # Renew Let's Encrypt script (to be scripted)
 #crontab -e
