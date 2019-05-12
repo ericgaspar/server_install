@@ -161,16 +161,14 @@ chgrp -R www-data /var/www
 chmod -R g+rw /var/www
 setfacl -d -R -m g::rw /var/www
 
-# MySQL
-apt-get -y install mysql-server mysql-client --fix-missing
+# MariaDB
 echo "------------------------------------------------------------------------------"
-read -s -p " Type the password for MySQL: " mysqlPass
+read -s -p " Do you want to install MariaDB? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
-echo
-# Probleme to resolve
-mysql --user=root --password="$mysqlPass" --execute="DROP USER 'root'@'localhost'; CREATE USER 'root'@'localhost' IDENTIFIED BY '$mysqlPass'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';"
-sed -i 's/^bind-address/#bind-address/' /etc/mysql/mariadb.cnf
-sed -i 's/^skip-networking/#skip-networking/' /etc/mysql/mariadb.cnf
+if [ "$prompt" = "y" ]; then
+    apt-get install -y mariadb-server mariadb-client
+    mysql_secure_installation
+fi
 
 # PhpMyAdmin
 echo "------------------------------------------------------------------------------"
