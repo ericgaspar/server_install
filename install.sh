@@ -61,11 +61,11 @@ sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/n
 
 # Let's Encrypt
 echo "------------------------------------------------------------------------------"
-read -p " Do you want to run Let's encrypt? <y/N> " prompt
+read -p " Do you want to run Let's Encrypt? <y/N>" prompt
 echo "------------------------------------------------------------------------------"
 if [ "$prompt" = "y" ]; then
 	apt-get install -y certbot
-	certbot certonly --email $EMAIL --agree-tos --force-renewal --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
+	certbot certonly -m $EMAIL --agree-tos -n --force-renewal --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
 fi
 
 cat > /etc/nginx/sites-available/$DOMAIN.conf <<EOF
