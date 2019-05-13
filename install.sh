@@ -3,7 +3,7 @@
 ####################################################################################
 #	LEMP server for Raspberry Pi                                               #
 #	This script will install Nginx, PHP, MySQL, phpMyAdmin                     #
-#	11/5/2019                                                                  #
+#	13/5/2019                                                                  #
 ####################################################################################
 
 # Verify that the script id run as ROOT
@@ -50,7 +50,7 @@ passwd
 apt-get install -y git vim acl
 
 # NGinx PHP
-apt-get install -y nginx-full
+apt-get install -y nginx
 apt-get install -y php7.0 php7.0-fpm php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 
 update-rc.d nginx defaults
@@ -131,7 +131,7 @@ server {
 
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
-        ssl_dhparam /etc/ssl/certs/dhparam.pem;
+    #   ssl_dhparam /etc/ssl/certs/dhparam.pem;
 
 	# deny access to .htaccess files, should an Apache document root conflict with nginx
 	#location ~ /\.ht {
@@ -141,7 +141,7 @@ server {
 EOF
 
 rm /etc/nginx/sites-enabled/default
-ln -s /etc/nginx/sites-available/$DOMAIN.conf /etc/nginx/sites-enabled/$DOMAIN.conf
+ln -s /etc/nginx/sites-available/$DOMAIN.conf /etc/nginx/sites-enabled/
 mv /var/www/html /var/www/$DOMAIN
 rm /var/www/$DOMAIN/index.nginx-debian.html
 echo "<?php phpinfo(); ?>" > /var/www/$DOMAIN/index.php
@@ -158,7 +158,7 @@ setfacl -d -R -m g::rw /var/www
 
 # MariaDB
 echo "------------------------------------------------------------------------------"
-read -s -p " Do you want to install MariaDB? <y/N> " prompt
+read -p " Do you want to install MariaDB? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
 if [ "$prompt" = "y" ]; then
     apt-get install -y mariadb-server mariadb-client
@@ -177,7 +177,7 @@ fi
 
 # Wifi setup
 echo "------------------------------------------------------------------------------"
-read -p " Do you want to set-up wifi? <y/N> " prompt
+read -p " Do you want to configure wifi? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
 echo "------------------------------------------------------------------------------"
 read -p " Enter your SSID: " SSID
@@ -211,6 +211,11 @@ cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 # Dhparam (take looong time on Raspberry pi)
 #openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
 
+#Setting the DNS servers on your Raspberry Pi
+sudo nano /etc/dhcpcd.conf
+static domain_name_servers=8.8.4.4 8.8.8.8
+
+#service dhcpcd restart
 service nginx restart
 service php7.0-fpm restart
 service mysql restart
