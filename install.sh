@@ -3,7 +3,7 @@
 ####################################################################################
 #	LEMP server for Raspberry Pi                                               #
 #	This script will install Nginx, PHP, MySQL, phpMyAdmin                     #
-#	13/5/2019                                                                  #
+#	23/10/2019                                                                  #
 ####################################################################################
 
 # Verify that the script id run as ROOT
@@ -49,7 +49,7 @@ passwd
 # Install complementary apps
 apt-get install -y git vim acl
 
-# NGinx PHP
+# NGinx PHP (dernière version)
 apt-get install -y nginx
 apt-get install -y php7.0 php7.0-fpm php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
 
@@ -119,8 +119,8 @@ server {
     	ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
     	ssl_trusted_certificate /etc/letsencrypt/live/$DOMAIN/chain.pem;
 
-    # Disable SSLv3
-       ssl_protocols TLSv1.2;
+    # Disable SSLv3 (TLSv1.3)
+       ssl_protocols TLSv1.2; 
 
 	# Enable server-side protection against BEAST attacks
     	ssl_prefer_server_ciphers on;
@@ -175,7 +175,7 @@ if [ "$prompt" = "y" ]; then
 	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
 fi
 
-# Wifi setup
+# Wifi setup avec dongle usb
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to configure wifi? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
@@ -199,17 +199,18 @@ fi
 # Fail2ban
 apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+#éditer le jail local
 
 # Install a firewall (may not be necessary)
 #apt-get install -y ufw
 #ufw enable
 
 # Renew Let's Encrypt script (to be scripted)
-#crontab -e
-#30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
+crontab -e
+30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
 
 # Dhparam (take looong time on Raspberry pi)
-#openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
+openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
 
 #Setting the DNS servers on your Raspberry Pi
 sudo nano /etc/dhcpcd.conf
