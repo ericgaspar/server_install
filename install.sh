@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ####################################################################################
-#	LEMP server for Raspberry Pi                                               #
-#	This script will install Nginx, PHP, MySQL, phpMyAdmin                     #
-#	6/10/2019                                                                  #
+#	LEMP server for Raspberry Pi                                                   #
+#	This script will install Nginx, PHP, Nodejs, MySQL, phpMyAdmin                 #
+#	6/11/2019                                                                      #
 ####################################################################################
 
 # Verify that the script id run as ROOT
@@ -53,12 +53,12 @@ apt-get install -y git vim acl
 apt-get install -y nginx php-fpm
 
 update-rc.d nginx defaults
-update-rc.d php7.0-fpm defaults
+update-rc.d php7.3-fpm defaults
 
 sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.0/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
 
-# Let's Encrypt
+# Let's Encrypt (nginx must be stoped)
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to run Let's Encrypt? <y/N>" prompt
 echo "------------------------------------------------------------------------------"
@@ -222,7 +222,7 @@ static domain_name_servers=8.8.4.4 8.8.8.8
 
 #service dhcpcd restart
 service nginx restart
-service php7.0-fpm restart
+service php7.3-fpm restart
 service mysql restart
 service fail2ban restart
 apt-get autoremove -y
