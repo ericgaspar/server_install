@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ####################################################################################
-#	LEMP server for Raspberry Pi                                                   #
-#	This script will install Nginx, PHP, Nodejs, MySQL, phpMyAdmin                 #
-#	6/11/2019                                                                      #
+#	LEMP server for Raspberry Pi                                               #
+#	This script will install Nginx, PHP, Nodejs, MySQL, phpMyAdmin             #
+#	6/11/2019                                                                  #
 ####################################################################################
 
 # Verify that the script id run as ROOT
@@ -49,13 +49,13 @@ passwd
 # Install complementary apps
 apt-get install -y git vim acl
 
-# NGinx PHP (dernière version). PHP ou NodeJS ?
+# NGinx PHP (dernière version). PHP7.3 ou NodeJS ?
 apt-get install -y nginx php-fpm
 
 update-rc.d nginx defaults
 update-rc.d php7.3-fpm defaults
 
-sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.0/fpm/php.ini
+sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.3/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
 
 # Let's Encrypt (nginx must be stoped)
@@ -73,7 +73,7 @@ server {
 	listen			80;
 	listen			[::]:80;
 	server_name		$DOMAIN www.$DOMAIN;
-	return			301 https://%{server_name}%{request_uri};
+	return			301 https://$DOMAIN$request_uri;
 }
 
 server {
@@ -90,7 +90,7 @@ server {
 	# Pass the PHP scripts to FastCGI server
 	location ~ \.php$ {
 		include snippets/fastcgi-php.conf;
-		fastcgi_pass unix:/run/php/php7.0-fpm.sock;
+		fastcgi_pass unix:/run/php/php7.3-fpm.sock;
 	}
 
 	# Optimize static file serving
@@ -119,14 +119,14 @@ server {
     	ssl_trusted_certificate /etc/letsencrypt/live/$DOMAIN/chain.pem;
 
     # Disable SSLv3 (TLSv1.3)
-       ssl_protocols TLSv1.2; 
+        ssl_protocols TLSv1.2; 
 
-	# Enable server-side protection against BEAST attacks
+    # Enable server-side protection against BEAST attacks
     	ssl_prefer_server_ciphers on;
-  		ssl_session_tickets off;
+  	ssl_session_tickets off;
     	ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
-  		ssl_stapling on;
-  		ssl_stapling_verify on;
+  	ssl_stapling on;
+  	ssl_stapling_verify on;
 
     # Diffie-Hellman parameter for DHE ciphersuites
     # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
@@ -147,7 +147,6 @@ echo "<?php phpinfo(); ?>" > /var/www/$DOMAIN/index.php
 nginx -t
 systemctl start nginx
 systemctl status nginx
-
 
 # Set right access to www folder
 usermod -a -G www-data pi
