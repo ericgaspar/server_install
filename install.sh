@@ -149,6 +149,7 @@ nginx -t
 systemctl start nginx
 systemctl status nginx
 
+
 # Set right access
 usermod -a -G www-data pi
 chown -R pi:www-data /var/www
@@ -156,7 +157,11 @@ chgrp -R www-data /var/www
 chmod -R g+rw /var/www
 setfacl -d -R -m g::rw /var/www
 
-# MariaDB
+# Install Nodejs
+curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+apt-get install -y nodejs
+
+# Install MariaDB
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to install MariaDB? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
@@ -165,7 +170,7 @@ if [ "$prompt" = "y" ]; then
     mysql_secure_installation
 fi
 
-# PhpMyAdmin
+# Install PhpMyAdmin
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to install phpMyAdmin? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
@@ -239,6 +244,9 @@ echo " HTML page:                        $DOMAIN or `hostname -I`"
 echo " Acces to phpMyAdmin:              $DOMAIN/phpmyadmin"
 echo " User:                             root"
 echo " Password:                         $mysqlPass"
+echo
+echo " Nodejs version:                   `node -v`"
+echo " npm version:                      `npm -v`"
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to start raspi-config? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
