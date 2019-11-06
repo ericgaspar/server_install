@@ -3,7 +3,7 @@
 ####################################################################################
 #	LEMP server for Raspberry Pi                                               #
 #	This script will install Nginx, PHP, MySQL, phpMyAdmin                     #
-#	23/10/2019                                                                  #
+#	6/10/2019                                                                  #
 ####################################################################################
 
 # Verify that the script id run as ROOT
@@ -49,9 +49,8 @@ passwd
 # Install complementary apps
 apt-get install -y git vim acl
 
-# NGinx PHP (dernière version)
-apt-get install -y nginx
-apt-get install -y php7.0 php7.0-fpm php7.0-mbstring php7.0-curl php7.0-xml php7.0-gd php7.0-mysql
+# NGinx PHP (dernière version). PHP ou NodeJS ?
+apt-get install -y nginx php-fpm
 
 update-rc.d nginx defaults
 update-rc.d php7.0-fpm defaults
@@ -150,7 +149,7 @@ systemctl start nginx
 systemctl status nginx
 
 
-# Set right access
+# Set right access to www folder
 usermod -a -G www-data pi
 chown -R pi:www-data /var/www
 chgrp -R www-data /var/www
@@ -245,6 +244,7 @@ echo " Acces to phpMyAdmin:              $DOMAIN/phpmyadmin"
 echo " User:                             root"
 echo " Password:                         $mysqlPass"
 echo
+echo " php version:                      `php -v`"
 echo " Nodejs version:                   `node -v`"
 echo " npm version:                      `npm -v`"
 echo "------------------------------------------------------------------------------"
