@@ -78,14 +78,12 @@ map $sent_http_content_type $expires {
 
 server {
     listen		80;
-    listen		[::]:80;
     server_name	$DOMAIN www.$DOMAIN;
     return		301 https://$DOMAIN$request_uri;
 }
 
 server {
     listen		443 ssl http2;
-    listen		[::]:443 ssl http2;
     server_name	www.$DOMAIN $DOMAIN;
     root		/var/www/$DOMAIN;
     index		index.php index.html index.htm;
@@ -123,8 +121,8 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
     ssl_trusted_certificate /etc/letsencrypt/live/$DOMAIN/chain.pem;
 
-    # Disable SSLv3 (TLSv1.3)
-    ssl_protocols TLSv1.2; 
+    # Protocol
+    ssl_protocols TLSv1.2 TLSv1.3; 
 
     # Enable server-side protection against BEAST attacks
     ssl_prefer_server_ciphers on;
