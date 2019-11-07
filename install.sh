@@ -101,41 +101,36 @@ server {
 	}
 
 	# Compression
-    	gzip on;
-    	gzip_disable "msie6";
-    	gzip_vary on;
-    	gzip_comp_level 6;
-    	gzip_buffers 16 8k;
-    	gzip_http_version 1.1;
-    	gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+    gzip on;
+    gzip_disable "msie6";
+    gzip_vary on;
+    gzip_comp_level 6;
+    gzip_buffers 16 8k;
+    gzip_http_version 1.1;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
 	# Improve HTTPS performance with session resumption
-        ssl_session_cache shared:SSL:10m;
-        ssl_session_timeout 10m;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 5m;
+    ssl_session_tickets off;
 
     # ssl
-    	ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
-    	ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
-    	ssl_trusted_certificate /etc/letsencrypt/live/$DOMAIN/chain.pem;
+    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/$DOMAIN/chain.pem;
 
     # Disable SSLv3 (TLSv1.3)
-        ssl_protocols TLSv1.2; 
+    ssl_protocols TLSv1.2; 
 
     # Enable server-side protection against BEAST attacks
-    	ssl_prefer_server_ciphers on;
+    ssl_prefer_server_ciphers on;
   	ssl_session_tickets off;
-    	ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
+    ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
   	ssl_stapling on;
   	ssl_stapling_verify on;
 
     # Diffie-Hellman parameter for DHE ciphersuites
-    # $ sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
-    #   ssl_dhparam /etc/ssl/certs/dhparam.pem;
-
-	# deny access to .htaccess files, should an Apache document root conflict with nginx
-	#location ~ /\.ht {
-	#	deny all;
-	#}
+    # ssl_dhparam /etc/ssl/certs/dhparam.pem;
 }
 EOF
 
