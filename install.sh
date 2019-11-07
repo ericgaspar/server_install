@@ -66,6 +66,16 @@ fi
 
 cat > /etc/nginx/sites-available/$DOMAIN.conf <<EOF
 # $DOMAIN server configuration
+
+# Expires map
+map $sent_http_content_type $expires {
+    default                    off;
+    text/html                  7d;
+    text/css                   max;
+    application/javascript     max;
+    ~image/                    max;
+}
+
 server {
 	listen			80;
 	listen			[::]:80;
@@ -80,6 +90,8 @@ server {
 	root			/var/www/$DOMAIN;
 	index			index.php index.html index.htm;
 
+    charset UTF-8; 
+    
 	# Pass the PHP scripts to FastCGI server
 	location ~ \.php$ {
 		include snippets/fastcgi-php.conf;
