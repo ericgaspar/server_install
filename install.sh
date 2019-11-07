@@ -77,35 +77,35 @@ map $sent_http_content_type $expires {
 }
 
 server {
-	listen			80;
-	listen			[::]:80;
-	server_name		$DOMAIN www.$DOMAIN;
-	return			301 https://$DOMAIN$request_uri;
+    listen		80;
+    listen		[::]:80;
+    server_name	$DOMAIN www.$DOMAIN;
+    return		301 https://$DOMAIN$request_uri;
 }
 
 server {
-	listen			443 ssl http2;
-	listen			[::]:443 ssl http2;
-	server_name		www.$DOMAIN $DOMAIN;
-	root			/var/www/$DOMAIN;
-	index			index.php index.html index.htm;
+    listen		443 ssl http2;
+    listen		[::]:443 ssl http2;
+    server_name	www.$DOMAIN $DOMAIN;
+    root		/var/www/$DOMAIN;
+    index		index.php index.html index.htm;
 
     charset UTF-8; 
     
-	# Pass the PHP scripts to FastCGI server
-	location ~ \.php$ {
-		include snippets/fastcgi-php.conf;
-		fastcgi_pass unix:/run/php/php7.3-fpm.sock;
-	}
+    # Pass the PHP scripts to FastCGI server
+    location ~ \.php$ {
+    	include snippets/fastcgi-php.conf;
+    	fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+    }
 
-	# Optimize static file serving
-	location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml)$ {
-		access_log off;
-		log_not_found off;
-		expires 60d;
-	}
+    # Optimize static file serving
+    location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml)$ {
+    	access_log off;
+    	log_not_found off;
+    	expires 60d;
+    }
 
-	# Compression
+    # Compression
     gzip on;
     gzip_disable "msie6";
     gzip_vary on;
@@ -114,7 +114,7 @@ server {
     gzip_http_version 1.1;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
-	# Improve HTTPS performance with session resumption
+    # Improve HTTPS performance with session resumption
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 5m;
 
@@ -128,10 +128,10 @@ server {
 
     # Enable server-side protection against BEAST attacks
     ssl_prefer_server_ciphers on;
-  	ssl_session_tickets off;
+    ssl_session_tickets off;
     ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
-  	ssl_stapling on;
-  	ssl_stapling_verify on;
+    ssl_stapling on;
+    ssl_stapling_verify on;
 
     # Diffie-Hellman parameter for DHE ciphersuites
     # ssl_dhparam /etc/ssl/certs/dhparam.pem;
@@ -155,8 +155,14 @@ chmod -R g+rw /var/www
 setfacl -d -R -m g::rw /var/www
 
 # Install Nodejs
-curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
-apt-get install -y nodejs
+echo "------------------------------------------------------------------------------"
+read -p " Do you want to install Nodejs? <y/N> " prompt
+echo "------------------------------------------------------------------------------"
+if [ "$prompt" = "y" ]; then
+    cd ~
+    curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+    apt-get install -y nodejs
+fi
 
 # Install MariaDB
 echo "------------------------------------------------------------------------------"
@@ -173,8 +179,8 @@ read -p " Do you want to install phpMyAdmin? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
 echo
 if [ "$prompt" = "y" ]; then
-	apt-get install -y phpmyadmin
-	ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
+    apt-get install -y phpmyadmin
+    ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
 fi
 
 # Wifi setup avec dongle usb
@@ -191,9 +197,9 @@ country=FR
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 network={
-	ssid="$SSID"
-	psk="$WIFIPASSWORD"
-	key_mgmt=WPA-PSK
+    ssid="$SSID"
+    psk="$WIFIPASSWORD"
+    key_mgmt=WPA-PSK
 }
 EOF
 fi
