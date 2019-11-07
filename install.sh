@@ -3,7 +3,7 @@
 ####################################################################################
 #	LEMP server for Raspberry Pi                                               #
 #	This script will install Nginx, PHP, Nodejs, MySQL, phpMyAdmin             #
-#	6/11/2019                                                                  #
+#	7/11/2019                                                                  #
 ####################################################################################
 
 # Verify that the script id run as ROOT
@@ -43,9 +43,6 @@ apt-get dist-upgrade -y
 # Update Raspberry Pi kernel
 rpi-update
 
-# Change the default password /!\
-passwd
-
 # Install complementary apps
 apt-get install -y git vim acl
 
@@ -83,10 +80,6 @@ server {
 	root			/var/www/$DOMAIN;
 	index			index.php index.html index.htm;
 
-	location / {
-		try_files $uri $uri/ /index.php$is_args$args;
-	}
-
 	# Pass the PHP scripts to FastCGI server
 	location ~ \.php$ {
 		include snippets/fastcgi-php.conf;
@@ -112,7 +105,6 @@ server {
 	# Improve HTTPS performance with session resumption
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 5m;
-    ssl_session_tickets off;
 
     # ssl
     ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
@@ -197,22 +189,22 @@ fi
 # Fail2ban
 apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-#éditer le jail local
+# éditer le jail local
 
 # Install a firewall (may not be necessary)
 #apt-get install -y ufw
 #ufw enable
 
 # Renew Let's Encrypt script (to be scripted)
-crontab -e
-30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
+#crontab -e
+#30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
 
 # Dhparam (take looong time on Raspberry pi)
-openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
+#openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
 
 #Setting the DNS servers on your Raspberry Pi
-sudo nano /etc/dhcpcd.conf
-static domain_name_servers=8.8.4.4 8.8.8.8
+#sudo nano /etc/dhcpcd.conf
+#static domain_name_servers=8.8.4.4 8.8.8.8
 
 #service dhcpcd restart
 service nginx restart
