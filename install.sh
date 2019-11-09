@@ -3,7 +3,7 @@
 ####################################################################################
 #	LEMP server for Raspberry Pi                                               #
 #	This script will install Nginx, PHP, Nodejs, MySQL, phpMyAdmin             #
-#	7/11/2019                                                                  #
+#	9/11/2019                                                                  #
 ####################################################################################
 
 # Verify that the script id run as ROOT
@@ -46,7 +46,7 @@ rpi-update
 # Install complementary apps
 apt-get install -y git vim acl
 
-# NGinx PHP (dernière version). PHP7.3 ou NodeJS ?
+# NGinx and PHP7.3 install
 apt-get install -y nginx php-fpm
 
 update-rc.d nginx defaults
@@ -55,7 +55,7 @@ update-rc.d php7.3-fpm defaults
 sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.3/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
 
-# Let's Encrypt (nginx must be stoped)
+# Let's Encrypt install
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to run Let's Encrypt? <y/N>" prompt
 echo "------------------------------------------------------------------------------"
@@ -162,7 +162,7 @@ chgrp -R www-data /var/www
 chmod -R g+rw /var/www
 setfacl -d -R -m g::rw /var/www
 
-# Install Nodejs
+# Nodejs install
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to install Nodejs? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
@@ -172,7 +172,7 @@ if [ "$prompt" = "y" ]; then
     apt-get install -y nodejs
 fi
 
-# Install MariaDB
+# MariaDB install
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to install MariaDB? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
@@ -181,7 +181,7 @@ if [ "$prompt" = "y" ]; then
     mysql_secure_installation
 fi
 
-# Install PhpMyAdmin
+# PhpMyAdmin install
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to install phpMyAdmin? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
@@ -191,7 +191,7 @@ if [ "$prompt" = "y" ]; then
     ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
 fi
 
-# Wifi setup avec dongle usb
+# Wifi setup with usb dongle
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to configure wifi? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
@@ -212,10 +212,10 @@ network={
 EOF
 fi
 
-# Fail2ban
+# Fail2ban install
 apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
-# éditer le jail local
+# Edit jail local
 
 # Install a firewall (may not be necessary)
 #apt-get install -y ufw
