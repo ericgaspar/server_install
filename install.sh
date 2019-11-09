@@ -88,6 +88,16 @@ server {
     root		/var/www/$DOMAIN;
     index		index.php index.html index.htm;
 
+    # Uncomment to use Nginx as a Nodejs app proxy on port 8080.
+    #location / {
+    #   proxy_pass http://localhost:8080;
+    #   proxy_http_version 1.1;
+    #   proxy_set_header Upgrade $http_upgrade;
+    #   proxy_set_header Connection 'upgrade';
+    #   proxy_set_header Host $host;
+    #   proxy_cache_bypass $http_upgrade;
+    #}
+
     charset UTF-8; 
     
     # Pass the PHP scripts to FastCGI server
