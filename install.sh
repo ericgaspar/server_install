@@ -41,7 +41,7 @@ apt-get upgrade -y
 apt-get dist-upgrade -y
 
 # Update Raspberry Pi kernel
-rpi-update
+#rpi-update
 
 # Install complementary apps
 apt-get install -y git vim acl
