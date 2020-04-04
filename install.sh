@@ -31,9 +31,7 @@ echo "--------------------------------------------------------------------------
 read -p " Do you want to change the time zone? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
 echo
-if [ "$prompt" = "y" ]; then
-	dpkg-reconfigure tzdata
-fi
+timedatectl set-timezone Europe/Paris
 
 # Update Raspberry Pi
 apt-get update -y
