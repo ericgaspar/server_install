@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ####################################################################################
-#	LEMP server for Raspberry Pi                                               #
-#	This script will install Nginx, PHP, Nodejs, MySQL, phpMyAdmin             #
-#	9/11/2019                                                                  #
+#	LEMP server for Raspberry Pi                                                   #
+#	This script will install Nginx, PHP, Nodejs, MySQL, phpMyAdmin                 #
+#	04/04/2020                                                                     #
 ####################################################################################
 
 # Verify that the script id run as ROOT
@@ -54,7 +54,7 @@ sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/n
 
 # Let's Encrypt install
 echo "------------------------------------------------------------------------------"
-read -p " Do you want to run Let's Encrypt? <y/N>" prompt
+read -p " Do you want to run Let's Encrypt? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
 if [ "$prompt" = "y" ]; then
 	apt-get install -y certbot
@@ -63,15 +63,6 @@ fi
 
 cat > /etc/nginx/sites-available/$DOMAIN.conf <<EOF
 # $DOMAIN server configuration
-
-# Expires map
-map $sent_http_content_type $expires {
-    default                    off;
-    text/html                  7d;
-    text/css                   max;
-    application/javascript     max;
-    ~image/                    max;
-}
 
 server {
     listen		80;
