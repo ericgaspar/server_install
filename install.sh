@@ -31,6 +31,7 @@ echo "--------------------------------------------------------------------------
 read -p " Do you want to change the time zone? <y/N> " prompt
 echo "------------------------------------------------------------------------------"
 echo
+
 timedatectl set-timezone Europe/Paris
 
 # Update Raspberry Pi
@@ -137,9 +138,9 @@ ln -s /etc/nginx/sites-available/$DOMAIN.conf /etc/nginx/sites-enabled/
 mv /var/www/html /var/www/$DOMAIN
 rm /var/www/$DOMAIN/index.nginx-debian.html
 echo "<?php phpinfo(); ?>" > /var/www/$DOMAIN/index.php
-nginx -t
-systemctl start nginx
-systemctl status nginx
+#nginx -t
+#systemctl start nginx
+#systemctl status nginx
 
 # Set right access to www folder
 usermod -a -G www-data pi
