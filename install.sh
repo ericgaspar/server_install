@@ -28,10 +28,8 @@ read -p " Enter your Domain Name: " DOMAIN
 echo "------------------------------------------------------------------------------"
 read -p " Enter your Email Adress: " EMAIL
 echo "------------------------------------------------------------------------------"
-read -p " Do you want to change the time zone? <y/N> " prompt
-echo "------------------------------------------------------------------------------"
-echo
 
+# Set timezone to Europe/Paris
 timedatectl set-timezone Europe/Paris
 
 # Update Raspberry Pi
@@ -244,8 +242,8 @@ echo " User:                             root"
 echo " Password:                         $mysqlPass"
 echo
 echo " php version:                      `php -v`"
-echo " Nodejs version:                   `node -v`"
-echo " npm version:                      `npm -v`"
+#echo " Nodejs version:                   `node -v`"
+#echo " npm version:                      `npm -v`"
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to start raspi-config? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
