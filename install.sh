@@ -7,7 +7,7 @@
 #
 #   DESCRIPTION: Server Installer Script.
 #
-#	             This script will install Nginx, PHP, MySQL, phpMyAdmin
+#                This script will install Nginx, PHP, MySQL, phpMyAdmin
 #
 #          BUGS: phpmyadmin password...
 #
@@ -18,8 +18,8 @@
 
 # Verify that the script id run as ROOT
 if [ "$(whoami)" != "root" ]; then
-	echo "Run script as ROOT! (sudo bash install.sh)"
-	exit
+    echo "Run script as ROOT! (sudo bash install.sh)"
+    exit
 fi
 
 print_banner() {
@@ -115,24 +115,24 @@ echo "--------------------------------------------------------------------------
 read -p " Do you want to run Let's Encrypt? <y/N>" prompt
 echo "------------------------------------------------------------------------------"
 if [ "$prompt" = "y" ]; then
-	apt-get install -y certbot
-	certbot certonly -m $EMAIL --agree-tos -n --force-renewal --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
+    apt-get install -y certbot
+    certbot certonly -m $EMAIL --agree-tos -n --force-renewal --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
 fi
 
 cat > /etc/nginx/sites-available/$DOMAIN.conf <<EOF
 # $DOMAIN server configuration
 
 server {
-    listen		80;
-    server_name	$DOMAIN www.$DOMAIN;
-    return		301 https://$DOMAIN$request_uri;
+    listen      80;
+    server_name $DOMAIN www.$DOMAIN;
+    return      301 https://$DOMAIN$request_uri;
 }
 
 server {
-    listen		443 ssl http2;
-    server_name	www.$DOMAIN $DOMAIN;
-    root		/var/www/$DOMAIN;
-    index		index.php index.html index.htm;
+    listen      443 ssl http2;
+    server_name www.$DOMAIN $DOMAIN;
+    root        /var/www/$DOMAIN;
+    index       index.php index.html index.htm;
 
     # Uncomment to use Nginx as a Nodejs app proxy on port 8080.
     #location / {
@@ -148,15 +148,15 @@ server {
     
     # Pass the PHP scripts to FastCGI server
     location ~ \.php$ {
-    	include snippets/fastcgi-php.conf;
-    	fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php7.3-fpm.sock;
     }
 
     # Optimize static file serving
     location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml)$ {
-    	access_log off;
-    	log_not_found off;
-    	expires 60d;
+        access_log off;
+        log_not_found off;
+        expires 60d;
     }
 
     # Compression
@@ -306,5 +306,5 @@ echo " npm version:                      `npm -v`"
 echo "------------------------------------------------------------------------------"
 read -p " Do you want to restart? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
-	reboot
+    reboot
 fi

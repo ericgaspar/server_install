@@ -6,7 +6,9 @@
 
 `wget https://raw.githubusercontent.com/ericgaspar/server_install/master/install.sh`
 
-`sudo bash install.sh`
+`chmod +x install.sh`
+
+`sudo bash install.sh` ou `sudo ./install.sh`
 
 ## Mysql
 To connect to mysql
