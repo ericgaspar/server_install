@@ -1,23 +1,82 @@
 #!/bin/bash
-
-####################################################################################
-#	LEMP server for Raspberry Pi                                                   #
-#	This script will install Nginx, PHP, Nodejs, MySQL, phpMyAdmin                 #
-#	04/04/2020                                                                     #
-####################################################################################
+#===============================================================================
+#
+#         USAGE: curl https://raw.githubusercontent.com/ericgaspar/server_install/master/install.sh
+#                 AND
+#                sudo bash install.sh
+#
+#   DESCRIPTION: Server Installer Script.
+#
+#                This script will install Nginx, PHP, MySQL, phpMyAdmin
+#
+#          BUGS: phpmyadmin password...
+#
+#       CREATED: 05/04/2020 
+#
+#      REVISION: 0.2
+#===============================================================================
 
 # Verify that the script id run as ROOT
 if [ "$(whoami)" != "root" ]; then
-	echo "Run script as ROOT! (sudo bash install.sh)"
-	exit
+    echo "Run script as ROOT! (sudo bash install.sh)"
+    exit
 fi
 
+print_banner() {
+  cat <<-'EOF'
+=================================================
+              
+ ____ 
+|  _ \ __ _ ___ _ __ | |__   ___ _ __ _ __ _   _ 
+| |_) / _` / __| '_ \| '_ \ / _ \ '__| '__| | | |
+|  _ < (_| \__ \ |_) | |_) |  __/ |  | |  | |_| |
+|_| \_\__,_|___/ .__/|_.__/ \___|_|  |_|   \__, |
+               |_|                         |___/       
+          ____                                     
+         / ___|  ___ _ ____   _____ _ __ 
+         \___ \ / _ \ '__\ \ / / _ \ '__|
+          ___) |  __/ |   \ V /  __/ |  
+         |____/ \___|_|    \_/ \___|_| 
+                                                                       
+       ___           _        _ _           
+      |_ _|_ __  ___| |_ __ _| | | ___ _ __ 
+       | || '_ \/ __| __/ _` | | |/ _ \ '__|
+       | || | | \__ \ || (_| | | |  __/ |   
+      |___|_| |_|___/\__\__,_|_|_|\___|_|   
+
+                                      
+==================================================
+EOF
+}
+
+
+USER=$(whoami)
+
+# Ask for a new password
+passwd
+
+# Set password for phpmyadmin
+while true; do
+    read -s -p "Password: " PASSWORD
+    echo
+    read -s -p "Password (again): " PASSWORD2
+    echo
+    [ "$PASSWORD" = "$PASSWORD2" ] && break
+    echo "Please try again"
+done
+
 # Solve Perl language issue
-export LANGUAGE=fr_FR.UTF-8
-export LANG=fr_FR.UTF-8
-export LC_ALL=fr_FR.UTF-8
-locale-gen fr_FR.UTF-8
-dpkg-reconfigure locales
+# Should not be interactive
+    #export LANGUAGE=fr_FR.UTF-8
+    #export LANG=fr_FR.UTF-8
+    #export LC_ALL=fr_FR.UTF-8
+    #locale-gen fr_FR.UTF-8
+    #dpkg-reconfigure locales
+
+    #localectl set-locale LANG=fr_FR.UTF-8
+
+# Set language locals
+perl -pi -e 's/# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/g' /etc/locale.gen
 
 # Define user Domain Name, email, time-zone
 echo "------------------------------------------------------------------------------"
@@ -29,8 +88,10 @@ echo "--------------------------------------------------------------------------
 read -p " Enter your Email Adress: " EMAIL
 echo "------------------------------------------------------------------------------"
 
-# Set timezone to Europe/Paris
-timedatectl set-timezone Europe/Paris
+# Set the time-Zone
+rm /etc/localtime
+ln -s /usr/share/zoneinfo/Europe/Paris /etc/localtime
+rm /etc/timezone
 
 # Update Raspberry Pi
 apt-get update -y
@@ -51,27 +112,27 @@ sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/n
 
 # Let's Encrypt install
 echo "------------------------------------------------------------------------------"
-read -p " Do you want to run Let's Encrypt? <y/N> " prompt
+read -p " Do you want to run Let's Encrypt? <y/N>" prompt
 echo "------------------------------------------------------------------------------"
 if [ "$prompt" = "y" ]; then
-	apt-get install -y certbot
-	certbot certonly -m $EMAIL --agree-tos -n --force-renewal --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
+    apt-get install -y certbot
+    certbot certonly -m $EMAIL --agree-tos -n --force-renewal --authenticator standalone -d $DOMAIN -d www.$DOMAIN --pre-hook "service nginx stop" --post-hook "service nginx start"
 fi
 
 cat > /etc/nginx/sites-available/$DOMAIN.conf <<EOF
 # $DOMAIN server configuration
 
 server {
-    listen		80;
-    server_name	$DOMAIN www.$DOMAIN;
-    return		301 https://$DOMAIN$request_uri;
+    listen      80;
+    server_name $DOMAIN www.$DOMAIN;
+    return      301 https://$DOMAIN$request_uri;
 }
 
 server {
-    listen		443 ssl http2;
-    server_name	www.$DOMAIN $DOMAIN;
-    root		/var/www/$DOMAIN;
-    index		index.php index.html index.htm;
+    listen      443 ssl http2;
+    server_name www.$DOMAIN $DOMAIN;
+    root        /var/www/$DOMAIN;
+    index       index.php index.html index.htm;
 
     # Uncomment to use Nginx as a Nodejs app proxy on port 8080.
     #location / {
@@ -87,15 +148,15 @@ server {
     
     # Pass the PHP scripts to FastCGI server
     location ~ \.php$ {
-    	include snippets/fastcgi-php.conf;
-    	fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php7.3-fpm.sock;
     }
 
     # Optimize static file serving
     location ~* \.(jpg|jpeg|gif|png|css|js|ico|xml)$ {
-    	access_log off;
-    	log_not_found off;
-    	expires 60d;
+        access_log off;
+        log_not_found off;
+        expires 60d;
     }
 
     # Compression
@@ -136,26 +197,13 @@ ln -s /etc/nginx/sites-available/$DOMAIN.conf /etc/nginx/sites-enabled/
 mv /var/www/html /var/www/$DOMAIN
 rm /var/www/$DOMAIN/index.nginx-debian.html
 echo "<?php phpinfo(); ?>" > /var/www/$DOMAIN/index.php
-#nginx -t
-#systemctl start nginx
-#systemctl status nginx
 
 # Set right access to www folder
-usermod -a -G www-data pi
-chown -R pi:www-data /var/www
+usermod -a -G www-data $USER
+chown -R $USER:www-data /var/www
 chgrp -R www-data /var/www
 chmod -R g+rw /var/www
 setfacl -d -R -m g::rw /var/www
-
-# Nodejs install
-echo "------------------------------------------------------------------------------"
-read -p " Do you want to install Nodejs? <y/N> " prompt
-echo "------------------------------------------------------------------------------"
-if [ "$prompt" = "y" ]; then
-    cd ~
-    curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
-    apt-get install -y nodejs
-fi
 
 # MariaDB install
 echo "------------------------------------------------------------------------------"
@@ -167,14 +215,25 @@ if [ "$prompt" = "y" ]; then
 fi
 
 # PhpMyAdmin install
-echo "------------------------------------------------------------------------------"
-read -p " Do you want to install phpMyAdmin? <y/N> " prompt
-echo "------------------------------------------------------------------------------"
-echo
-if [ "$prompt" = "y" ]; then
-    apt-get install -y phpmyadmin
-    ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
-fi
+#echo "------------------------------------------------------------------------------"
+#read -p " Do you want to install phpMyAdmin? <y/N> " prompt
+#echo "------------------------------------------------------------------------------"
+#echo
+#if [ "$prompt" = "y" ]; then
+#    apt-get install -y phpmyadmin
+#    ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
+#fi
+
+
+DEBIAN_FRONTEND=noninteractive apt-get -yq install phpmyadmin
+ln -s /usr/share/phpmyadmin /var/www/$DOMAIN
+mysql
+SELECT user,authentication_string,plugin,host FROM mysql.user;
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$PASSWORD';
+FLUSH PRIVILEGES;
+SELECT user,authentication_string,plugin,host FROM mysql.user;
+exit
+
 
 # Wifi setup with usb dongle
 echo "------------------------------------------------------------------------------"
@@ -207,8 +266,8 @@ cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 #ufw enable
 
 # Renew Let's Encrypt script (to be scripted)
-#crontab -e
-#30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
+crontab -e
+30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
 
 # Dhparam (take looong time on Raspberry pi)
 #openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
@@ -242,12 +301,10 @@ echo " User:                             root"
 echo " Password:                         $mysqlPass"
 echo
 echo " php version:                      `php -v`"
-#echo " Nodejs version:                   `node -v`"
-#echo " npm version:                      `npm -v`"
+echo " Nodejs version:                   `node -v`"
+echo " npm version:                      `npm -v`"
 echo "------------------------------------------------------------------------------"
-read -p " Do you want to start raspi-config? <y/N> " prompt
+read -p " Do you want to restart? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
-	raspi-config
-else
-	reboot
+    reboot
 fi
