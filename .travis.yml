@@ -1,0 +1,15 @@
+os: 
+  - linux
+dist: 
+  - bionic
+
+language:
+  - bash
+
+script: bash install.sh
+
+on:
+    branch: testing
+
+notifications:
+  email: false

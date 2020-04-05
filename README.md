@@ -1,5 +1,7 @@
 # Raspberry Pi LEMP server install script
 
+[![Build Status](https://travis-ci.org/ericgaspar/server_install.svg?branch=testing)](https://travis-ci.org/ericgaspar/server_install)
+
 ## Installation
 
 `wget https://raw.githubusercontent.com/ericgaspar/server_install/master/install.sh`
