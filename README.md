@@ -36,9 +36,3 @@ mysql> exit;
 $ service mysql restart
 
 ```
-
-## Nodejs
-
-```
-npm install
-```
