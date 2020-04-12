@@ -99,7 +99,7 @@ apt-get upgrade -y
 apt-get dist-upgrade -y
 
 # Install complementary apps
-apt-get install -y git vim acl
+apt-get install -y git vim acl proftpd
 
 # NGinx and PHP7.3 install
 apt-get install -y nginx php-fpm
@@ -275,6 +275,11 @@ crontab -e
 #Setting the DNS servers on your Raspberry Pi
 #sudo nano /etc/dhcpcd.conf
 #static domain_name_servers=8.8.4.4 8.8.8.8
+
+
+#start ssh service
+systemctl enable ssh
+systemctl start ssh
 
 #service dhcpcd restart
 service nginx restart
