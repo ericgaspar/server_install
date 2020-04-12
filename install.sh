@@ -76,9 +76,9 @@ done
     #localectl set-locale LANG=fr_FR.UTF-8
 
 # Set language locals
-perl -pi -e 's/# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/g' /etc/locale.gen
+perl -$USER -e 's/# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/g' /etc/locale.gen
 
-# Define user Domain Name, email, time-zone
+# Define user Domain Name, email
 echo "------------------------------------------------------------------------------"
 echo " NGinx + PHP7-FPM + MySQL installation"
 echo " This script will install a LEMP server on a Raspberry Pi"
@@ -88,21 +88,17 @@ echo "--------------------------------------------------------------------------
 read -p " Enter your Email Adress: " EMAIL
 echo "------------------------------------------------------------------------------"
 
-# Set the time-Zone
+# Set the time-Zone to Europe/Paris
 rm /etc/localtime
 ln -s /usr/share/zoneinfo/Europe/Paris /etc/localtime
 rm /etc/timezone
 
-# Update Raspberry Pi
-apt-get update -y
-apt-get upgrade -y
+# Update server systeme
+apt-get update -y && apt-get upgrade -y
 apt-get dist-upgrade -y
 
 # Install complementary apps
-apt-get install -y git vim acl proftpd
-
-# NGinx and PHP7.3 install
-apt-get install -y nginx php-fpm
+apt-get install -y nginx php-fpm git vim acl proftpd
 
 update-rc.d nginx defaults
 update-rc.d php7.3-fpm defaults
@@ -112,7 +108,7 @@ sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/n
 
 # Let's Encrypt install
 echo "------------------------------------------------------------------------------"
-read -p " Do you want to run Let's Encrypt? <y/N>" prompt
+read -p " Do you want to run Let's Encrypt? <Y/n>" prompt
 echo "------------------------------------------------------------------------------"
 if [ "$prompt" = "y" ]; then
     apt-get install -y certbot
@@ -207,7 +203,7 @@ setfacl -d -R -m g::rw /var/www
 
 # MariaDB install
 echo "------------------------------------------------------------------------------"
-read -p " Do you want to install MariaDB? <y/N> " prompt
+read -p " Do you want to install MariaDB? <Y/n> " prompt
 echo "------------------------------------------------------------------------------"
 if [ "$prompt" = "y" ]; then
     apt-get install -y mariadb-server mariadb-client
@@ -216,7 +212,7 @@ fi
 
 # PhpMyAdmin install
 #echo "------------------------------------------------------------------------------"
-#read -p " Do you want to install phpMyAdmin? <y/N> " prompt
+#read -p " Do you want to install phpMyAdmin? <Y/n> " prompt
 #echo "------------------------------------------------------------------------------"
 #echo
 #if [ "$prompt" = "y" ]; then
