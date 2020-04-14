@@ -98,7 +98,7 @@ apt-get update -y && apt-get upgrade -y
 apt-get dist-upgrade -y
 
 # Install complementary apps
-apt-get install -y nginx php-fpm git vim acl proftpd
+apt-get install -y nginx php-fpm git vim acl proftpd net-tools
 
 update-rc.d nginx defaults
 update-rc.d php7.3-fpm defaults
