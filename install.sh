@@ -64,18 +64,13 @@ while true; do
     echo "Please try again"
 done
 
-# Solve Perl language issue
-# Should not be interactive
-    #export LANGUAGE=fr_FR.UTF-8
-    #export LANG=fr_FR.UTF-8
-    #export LC_ALL=fr_FR.UTF-8
-    #locale-gen fr_FR.UTF-8
-    #dpkg-reconfigure locales
-
-    #localectl set-locale LANG=fr_FR.UTF-8
-
 # Set language locals
 perl -$USER -e 's/# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/g' /etc/locale.gen
+
+# Set the time-Zone to Europe/Paris
+rm /etc/localtime
+ln -s /usr/share/zoneinfo/Europe/Paris /etc/localtime
+rm /etc/timezone
 
 # Define user Domain Name, email
 echo "------------------------------------------------------------------------"
@@ -87,17 +82,12 @@ echo "------------------------------------------------------------------------"
 read -p " Enter your Email Adress: " EMAIL
 echo "------------------------------------------------------------------------"
 
-# Set the time-Zone to Europe/Paris
-rm /etc/localtime
-ln -s /usr/share/zoneinfo/Europe/Paris /etc/localtime
-rm /etc/timezone
-
 # Update server systeme
 apt-get update -y && apt-get upgrade -y
 apt-get dist-upgrade -y
 
 # Install complementary apps
-apt-get install -y nginx php-fpm git vim acl proftpd net-tools
+apt-get install -y nginx php-fpm git vim acl proftpd
 
 update-rc.d nginx defaults
 update-rc.d php7.3-fpm defaults
@@ -230,7 +220,7 @@ SELECT user,authentication_string,plugin,host FROM mysql.user;
 exit
 
 
-# Wifi setup with usb dongle
+# Wifi setup with USB dongle for the Raspberry Pi
 echo "------------------------------------------------------------------------"
 read -p " Do you want to configure wifi? <y/N> " prompt
 if [ "$prompt" = "y" ]; then
@@ -267,20 +257,21 @@ crontab -e
 # Dhparam (take looong time on Raspberry pi)
 #openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
 
-#Setting the DNS servers on your Raspberry Pi
+# Setting the DNS servers on your Raspberry Pi
 #sudo nano /etc/dhcpcd.conf
 #static domain_name_servers=8.8.4.4 8.8.8.8
 
-
-#start ssh service
+# Start ssh service
 systemctl enable ssh
 systemctl start ssh
 
-#service dhcpcd restart
+# Service restart
 service nginx restart
 service php7.3-fpm restart
 service mysql restart
 service fail2ban restart
+
+# Clean-up
 apt-get autoremove -y
 apt-get autoclean -y
 
