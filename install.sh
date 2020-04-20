@@ -1,4 +1,5 @@
 #!/bin/bash
+
 #===============================================================================
 #
 #         USAGE: curl https://raw.githubusercontent.com/ericgaspar/server_install/master/install.sh
