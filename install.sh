@@ -242,6 +242,11 @@ network={
 EOF
 fi
 
+
+# Set up IPv6 pour l'interface eth0
+IPV6=ip addr show dev eth0 | sed -e's/^.*inet6 \([^ ]*\)\/.*$/\1/;t;d'
+
+
 # Fail2ban install
 apt-get install -y fail2ban
 cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
