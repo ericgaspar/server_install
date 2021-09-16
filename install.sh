@@ -1,20 +1,14 @@
 #!/bin/bash
 
 #===============================================================================
-#
-#         USAGE: curl https://raw.githubusercontent.com/ericgaspar/server_install/master/install.sh
+#        USAGE: curl https://raw.githubusercontent.com/ericgaspar/server_install/master/install.sh
 #                 AND
-#                sudo bash install.sh
-#
-#   DESCRIPTION: Server Installer Script.
-#
-#                This script will install NGINX, PHP, MySQL, phpMyAdmin
-#
-#          BUGS: phpmyadmin password...
-#
-#       CREATED: 15/09/2021
-#
-#      REVISION: 0.3
+#               sudo bash install.sh
+#  DESCRIPTION: Server Installer Script.
+#               This script will install NGINX, PHP, MySQL, phpMyAdmin
+#         BUGS: phpmyadmin password...
+#      CREATED: 15/09/2021
+#     REVISION: 0.3
 #===============================================================================
 
 # Verify that the script id run as ROOT
