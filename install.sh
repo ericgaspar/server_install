@@ -8,13 +8,13 @@
 #
 #   DESCRIPTION: Server Installer Script.
 #
-#                This script will install Nginx, PHP, MySQL, phpMyAdmin
+#                This script will install NGINX, PHP, MySQL, phpMyAdmin
 #
 #          BUGS: phpmyadmin password...
 #
-#       CREATED: 05/04/2020 
+#       CREATED: 15/09/2021
 #
-#      REVISION: 0.2
+#      REVISION: 0.3
 #===============================================================================
 
 # Verify that the script id run as ROOT
@@ -26,13 +26,7 @@ fi
 print_banner() {
   cat <<-'EOF'
 =======================================================
-              
-    ____ 
-   |  _ \ __ _ ___ _ __ | |__   ___ _ __ _ __ _   _ 
-   | |_) / _` / __| '_ \| '_ \ / _ \ '__| '__| | | |
-   |  _ < (_| \__ \ |_) | |_) |  __/ |  | |  | |_| |
-   |_| \_\__,_|___/ .__/|_.__/ \___|_|  |_|   \__, |
-                  |_|                         |___/       
+                    
              ____                                     
             / ___|  ___ _ ____   _____ _ __ 
             \___ \ / _ \ '__\ \ / / _ \ '__|
@@ -75,8 +69,8 @@ rm /etc/timezone
 
 # Define user Domain Name, email
 echo "------------------------------------------------------------------------"
-echo " NGinx + PHP7-FPM + MySQL installation"
-echo " This script will install a LEMP server on a Raspberry Pi"
+echo " NGINX + PHP7-FPM + MySQL installation"
+echo " This script will install a LEMP server"
 echo "--------------------------------------------------------------------------"
 read -p " Enter your Domain Name: " DOMAIN
 echo "------------------------------------------------------------------------"
@@ -93,7 +87,7 @@ apt-get install -y nginx php-fpm git vim acl proftpd
 update-rc.d nginx defaults
 update-rc.d php7.3-fpm defaults
 
-sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.3/fpm/php.ini
+sed -i 's/^;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/7.4/fpm/php.ini
 sed -i 's/# server_names_hash_bucket_size/server_names_hash_bucket_size/' /etc/nginx/nginx.conf
 
 # Let's Encrypt install
@@ -135,7 +129,7 @@ server {
     # Pass the PHP scripts to FastCGI server
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
     }
 
     # Optimize static file serving
@@ -221,28 +215,6 @@ SELECT user,authentication_string,plugin,host FROM mysql.user;
 exit
 
 
-# Wifi setup with USB dongle for the Raspberry Pi
-echo "------------------------------------------------------------------------"
-read -p " Do you want to configure wifi? <y/N> " prompt
-if [ "$prompt" = "y" ]; then
-echo "------------------------------------------------------------------------"
-read -p " Enter your SSID: " SSID
-echo "------------------------------------------------------------------------"
-read -p " Enter your wifi key: " WIFIPASSWORD
-echo "------------------------------------------------------------------------"
-cat > /etc/wpa_supplicant/wpa_supplicant.conf <<EOF
-country=FR
-ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-update_config=1
-network={
-    ssid="$SSID"
-    psk="$WIFIPASSWORD"
-    key_mgmt=WPA-PSK
-}
-EOF
-fi
-
-
 # Set up IPv6 pour l'interface eth0
 IPV6=ip addr show dev eth0 | sed -e's/^.*inet6 \([^ ]*\)\/.*$/\1/;t;d'
 
@@ -260,7 +232,7 @@ cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 crontab -e
 30 3 * * 0 /opt/letsencrypt/letsencrypt-auto renew >> /var/log/letsencrypt/renewal.log
 
-# Dhparam (take looong time on Raspberry pi)
+# Dhparam
 #openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
 
 # Setting the DNS servers on your Raspberry Pi
@@ -284,7 +256,7 @@ apt-get autoclean -y
 # Summary
 echo
 echo "------------------------------------------------------------------------"
-echo "               NGinx + PHP7-FPM + MySQL installation finished"
+echo "               NGINX + PHP7-FPM + MySQL installation finished"
 echo "------------------------------------------------------------------------"
 echo " NGinx configuration folder:       /etc/nginx"
 echo " NGinx default site configuration: /etc/nginx/sites-enabled/default"
